@@ -1,0 +1,31 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="LGPL v3"
+issueTrackerURL="https://github.com/XFactHD/ItemModelTransformer"
+
+[[mods]]
+	modId="itemmodeltransformer"
+	version="${mod_version}"
+	displayName="ItemModelTransformer"
+	displayURL="https://www.curseforge.com/minecraft/mc-mods/itemmodeltransformer"
+	logoFile="logo.png"
+	authors="XFactHD"
+	displayTest="IGNORE_ALL_VERSION"
+	description=''''''
+
+[[mixins]]
+    config="itemmodeltransformer.mixin.json"
+
+[[dependencies.itemmodeltransformer]]
+    modId="neoforge"
+    mandatory=true
+    versionRange="${neo_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.itemmodeltransformer]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
