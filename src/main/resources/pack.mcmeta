@@ -1,8 +1,0 @@
-{
-  "pack": {
-    "description": {
-      "text": "itemmodeltransformer resources"
-    },
-    "pack_format": ${pack_format_number}
-  }
-}

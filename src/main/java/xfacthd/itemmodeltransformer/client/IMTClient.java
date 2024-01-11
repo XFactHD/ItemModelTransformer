@@ -16,21 +16,22 @@ import xfacthd.itemmodeltransformer.ItemModelTransformer;
 import xfacthd.itemmodeltransformer.client.handler.TransformHandler;
 import xfacthd.itemmodeltransformer.client.screen.TransformOverlay;
 import xfacthd.itemmodeltransformer.client.util.TransformerKeyConflictContext;
+import xfacthd.itemmodeltransformer.client.util.Utils;
 
 @Mod.EventBusSubscriber(modid = ItemModelTransformer.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class IMTClient
 {
-    private static final Lazy<KeyMapping> KEY_TOGGLE_TRANSFORMER = makeKeybind("toggle", GLFW.GLFW_KEY_I, false);
-    public static final Lazy<KeyMapping> KEY_PREV_CATEGORY = makeKeybind("prev_category", GLFW.GLFW_KEY_UP, true);
-    public static final Lazy<KeyMapping> KEY_NEXT_CATEGORY = makeKeybind("next_category", GLFW.GLFW_KEY_DOWN, true);
-    public static final Lazy<KeyMapping> KEY_PREV_ELEMENT = makeKeybind("prev_element", GLFW.GLFW_KEY_LEFT, true);
-    public static final Lazy<KeyMapping> KEY_NEXT_ELEMENT = makeKeybind("next_element", GLFW.GLFW_KEY_RIGHT, true);
-    public static final Lazy<KeyMapping> KEY_DECREMENT = makeKeybind("decrement", GLFW.GLFW_KEY_KP_SUBTRACT, true);
-    public static final Lazy<KeyMapping> KEY_INCREMENT = makeKeybind("increment", GLFW.GLFW_KEY_KP_ADD, true);
-    public static final Lazy<KeyMapping> KEY_CLEAR = makeKeybind("clear", GLFW.GLFW_KEY_C, true);
-    public static final Lazy<KeyMapping> KEY_LOAD = makeKeybind("load", GLFW.GLFW_KEY_L, true);
-    public static final Lazy<KeyMapping> KEY_PRINT = makeKeybind("print", GLFW.GLFW_KEY_P, true);
-    public static final Lazy<KeyMapping> KEY_TOGGLE_USAGE = makeKeybind("toggle_usage", GLFW.GLFW_KEY_H, true);
+    private static final Lazy<KeyMapping> KEY_TOGGLE_TRANSFORMER = makeKeybind("toggle", GLFW.GLFW_KEY_I, false, false);
+    public static final Lazy<KeyMapping> KEY_PREV_CATEGORY = makeKeybind("prev_category", GLFW.GLFW_KEY_UP, true, false);
+    public static final Lazy<KeyMapping> KEY_NEXT_CATEGORY = makeKeybind("next_category", GLFW.GLFW_KEY_DOWN, true, false);
+    public static final Lazy<KeyMapping> KEY_PREV_ELEMENT = makeKeybind("prev_element", GLFW.GLFW_KEY_LEFT, true, false);
+    public static final Lazy<KeyMapping> KEY_NEXT_ELEMENT = makeKeybind("next_element", GLFW.GLFW_KEY_RIGHT, true, false);
+    public static final Lazy<KeyMapping> KEY_DECREMENT = makeKeybind("decrement", GLFW.GLFW_KEY_KP_SUBTRACT, true, true);
+    public static final Lazy<KeyMapping> KEY_INCREMENT = makeKeybind("increment", GLFW.GLFW_KEY_KP_ADD, true, true);
+    public static final Lazy<KeyMapping> KEY_CLEAR = makeKeybind("clear", GLFW.GLFW_KEY_C, true, false);
+    public static final Lazy<KeyMapping> KEY_LOAD = makeKeybind("load", GLFW.GLFW_KEY_L, true, false);
+    public static final Lazy<KeyMapping> KEY_PRINT = makeKeybind("print", GLFW.GLFW_KEY_P, true, false);
+    public static final Lazy<KeyMapping> KEY_TOGGLE_USAGE = makeKeybind("toggle_usage", GLFW.GLFW_KEY_H, true, false);
 
     @SubscribeEvent
     public static void onRegisterKeyMappings(final RegisterKeyMappingsEvent event)
@@ -53,7 +54,7 @@ public final class IMTClient
     @SubscribeEvent
     public static void onRegisterGuiOverlays(final RegisterGuiOverlaysEvent event)
     {
-        event.registerAboveAll("transformer", new TransformOverlay());
+        event.registerAboveAll(Utils.rl("transform_editor"), new TransformOverlay());
     }
 
     private static void onClientTick(final TickEvent.ClientTickEvent event)
@@ -70,18 +71,25 @@ public final class IMTClient
         TransformOverlay.handleInput();
     }
 
-    private static Lazy<KeyMapping> makeKeybind(String name, int key, boolean useConflictCtx)
+    private static Lazy<KeyMapping> makeKeybind(String name, int key, boolean useConflictCtx, boolean incDec)
     {
         return Lazy.of(() ->
         {
             KeyMapping keybind = new KeyMapping(
-                    "key.itemmodeltransformer." + name,
+                    "key." + ItemModelTransformer.MODID +"." + name,
                     key,
-                    "key.categories.itemmodeltransformer"
+                    "key.categories." + ItemModelTransformer.MODID
             );
             if (useConflictCtx)
             {
-                keybind.setKeyConflictContext(TransformerKeyConflictContext.INSTANCE);
+                if (incDec)
+                {
+                    keybind.setKeyConflictContext(TransformerKeyConflictContext.INSTANCE_INC_DEC);
+                }
+                else
+                {
+                    keybind.setKeyConflictContext(TransformerKeyConflictContext.INSTANCE);
+                }
             }
             return keybind;
         });

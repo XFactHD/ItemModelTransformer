@@ -108,6 +108,25 @@ public final class Utils
                 .setStyle(Style.EMPTY.applyFormat(ChatFormatting.GOLD));
     }
 
+    public static Component formatKeyCombination(Component... keyNames)
+    {
+        MutableComponent result = Component.literal("[");
+        for (int i = 0; i < keyNames.length; i++)
+        {
+            if (i > 0)
+            {
+                result.append(Component.literal(" + "));
+            }
+            result.append(keyNames[i]);
+        }
+        return result.append(Component.literal("]")).setStyle(Style.EMPTY.applyFormat(ChatFormatting.GOLD));
+    }
+
+    public static ResourceLocation rl(String path)
+    {
+        return new ResourceLocation(ItemModelTransformer.MODID, path);
+    }
+
 
 
     private Utils() { }

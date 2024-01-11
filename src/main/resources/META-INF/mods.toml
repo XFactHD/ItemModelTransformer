@@ -18,14 +18,14 @@ issueTrackerURL="https://github.com/XFactHD/ItemModelTransformer"
 
 [[dependencies.itemmodeltransformer]]
     modId="neoforge"
-    mandatory=true
+    type="required"
     versionRange="${neo_version_range}"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.itemmodeltransformer]]
     modId="minecraft"
-    mandatory=true
+    type="required"
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"

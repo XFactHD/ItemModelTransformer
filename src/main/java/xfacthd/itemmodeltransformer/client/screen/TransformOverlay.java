@@ -32,18 +32,43 @@ public final class TransformOverlay implements IGuiOverlay
     private static final int LINE_HEIGHT = 10;
     private static final int LINE_PADDING = 5;
     private static final int HEIGHT_BASE = (LINE_HEIGHT * 2 + LINE_PADDING) * LINE_COUNT + LINE_HEIGHT;
-    private static final int HEIGHT_USAGE = HEIGHT_BASE + (LINE_HEIGHT * 10);
+    private static final int HEIGHT_USAGE = HEIGHT_BASE + (LINE_HEIGHT * 12);
     private static final int TOOLTIP_DIFF = 4;
+    private static final int KEY_LEFT_SHIFT = GLFW.GLFW_KEY_LEFT_SHIFT;
+    private static final int KEY_RIGHT_SHIFT = GLFW.GLFW_KEY_RIGHT_SHIFT;
+    private static final int KEY_LEFT_CTRL = Minecraft.ON_OSX ? GLFW.GLFW_KEY_LEFT_SUPER : GLFW.GLFW_KEY_LEFT_CONTROL;
+    private static final int KEY_RIGHT_CTRL = Minecraft.ON_OSX ? GLFW.GLFW_KEY_RIGHT_SUPER : GLFW.GLFW_KEY_RIGHT_CONTROL;
+    private static final int KEY_LEFT_ALT = GLFW.GLFW_KEY_LEFT_ALT;
+    private static final int KEY_RIGHT_ALT = GLFW.GLFW_KEY_RIGHT_ALT;
     private static final Component DUMMY_VECTOR_PRINT = Utils.printVector(new Vector3f(), false, 0);
     private static final Component DESC_CAT_TYPE = Component.translatable("desc.itemmodeltransformer.category.type");
     private static final Component DESC_CAT_ROTATION = Component.translatable("desc.itemmodeltransformer.category.rotation");
     private static final Component DESC_CAT_TRANSLATION = Component.translatable("desc.itemmodeltransformer.category.translation");
     private static final Component DESC_CAT_SCALE = Component.translatable("desc.itemmodeltransformer.category.scale");
     private static final Component DESC_CAT_POST_ROTATION = Component.translatable("desc.itemmodeltransformer.category.post_rotation");
-    private static final Component DESC_USAGE = Component.translatable("desc.itemmodeltransformer.usage");
     private static final Component MSG_CLEARED = Component.translatable("msg.itemmodeltransformer.cleared");
     private static final Component MSG_LOADED = Component.translatable("msg.itemmodeltransformer.loaded_from_item");
     private static final Component MSG_COPIED = Component.translatable("msg.itemmodeltransformer.copied_to_clipboard");
+    private static final Component DESC_KEY_CTRL = Component.translatable("desc.itemmodeltransformer.key.ctrl");
+    private static final Component DESC_KEY_CMD = Component.translatable("desc.itemmodeltransformer.key.cmd");
+    private static final Component DESC_KEY_SHIFT = Component.translatable("desc.itemmodeltransformer.key.shift");
+    private static final Component DESC_KEY_ALT = Component.translatable("desc.itemmodeltransformer.key.alt");
+    private static final Component DESC_INC_DEC_X10_0 = Component.translatable(
+            "desc.itemmodeltransformer.usage.inc_dec.x10_0",
+            Utils.formatKeyCombination(DESC_KEY_ALT)
+    );
+    private static final Component DESC_INC_DEC_X0_1 = Component.translatable(
+            "desc.itemmodeltransformer.usage.inc_dec.x0_1",
+            Utils.formatKeyCombination(DESC_KEY_SHIFT)
+    );
+    private static final Component DESC_INC_DEC_X0_01 = Component.translatable(
+            "desc.itemmodeltransformer.usage.inc_dec.x0_01",
+            Utils.formatKeyCombination(Minecraft.ON_OSX ? DESC_KEY_CMD : DESC_KEY_CTRL)
+    );
+    private static final Component DESC_INC_DEC_X0_001 = Component.translatable(
+            "desc.itemmodeltransformer.usage.inc_dec.x0_001",
+            Utils.formatKeyCombination(DESC_KEY_SHIFT, Minecraft.ON_OSX ? DESC_KEY_CMD : DESC_KEY_CTRL)
+    );
 
     private static int line = 0;
     private static int element = 0;
@@ -92,14 +117,9 @@ public final class TransformOverlay implements IGuiOverlay
             graphics.drawString(font, DESC_CAT_POST_ROTATION, 3, 103, selected ? 0x66FF66 : 0xFFFFFF, false);
             graphics.drawString(font, Utils.printVector(xform.rightRotation, selected, element), 3, 113, 0xFFFFFF, false);
 
-            graphics.drawString(font, usageLines[0], 3, 128, 0xFFFFFF, false);
-
-            if (!showUsage) return;
-
-            graphics.drawString(font, DESC_USAGE, 3, 138, 0xFFFFFF, false);
-            for (int i = 1; i < usageLines.length; i++)
+            for (int i = 0; i < usageLines.length; i++)
             {
-                graphics.drawString(font, usageLines[i], 3, 138 + (LINE_HEIGHT * i), 0xFFFFFF, false);
+                graphics.drawString(font, usageLines[i], 3, 128 + (LINE_HEIGHT * i), 0xFFFFFF, false);
             }
         });
     }
@@ -138,13 +158,14 @@ public final class TransformOverlay implements IGuiOverlay
                         Utils.formatKeybind(IMTClient.KEY_NEXT_ELEMENT)
                 ),
                 Component.translatable(
-                        "desc.itemmodeltransformer.usage.decrement",
+                        "desc.itemmodeltransformer.usage.inc_dec",
+                        Utils.formatKeybind(IMTClient.KEY_INCREMENT),
                         Utils.formatKeybind(IMTClient.KEY_DECREMENT)
                 ),
-                Component.translatable(
-                        "desc.itemmodeltransformer.usage.increment",
-                        Utils.formatKeybind(IMTClient.KEY_INCREMENT)
-                ),
+                DESC_INC_DEC_X10_0,
+                DESC_INC_DEC_X0_1,
+                DESC_INC_DEC_X0_01,
+                DESC_INC_DEC_X0_001,
                 Component.translatable(
                         "desc.itemmodeltransformer.usage.clear",
                         Utils.formatKeybind(IMTClient.KEY_CLEAR)
@@ -179,9 +200,9 @@ public final class TransformOverlay implements IGuiOverlay
         }
 
         long window = Minecraft.getInstance().getWindow().getWindow();
-        shift = InputConstants.isKeyDown(window, GLFW.GLFW_KEY_LEFT_SHIFT) || InputConstants.isKeyDown(window, GLFW.GLFW_KEY_RIGHT_SHIFT);
-        ctrl = InputConstants.isKeyDown(window, GLFW.GLFW_KEY_LEFT_CONTROL) || InputConstants.isKeyDown(window, GLFW.GLFW_KEY_RIGHT_CONTROL);
-        alt = InputConstants.isKeyDown(window, GLFW.GLFW_KEY_LEFT_ALT) || InputConstants.isKeyDown(window, GLFW.GLFW_KEY_RIGHT_ALT);
+        shift = InputConstants.isKeyDown(window, KEY_LEFT_SHIFT) || InputConstants.isKeyDown(window, KEY_RIGHT_SHIFT);
+        ctrl = InputConstants.isKeyDown(window, KEY_LEFT_CTRL) || InputConstants.isKeyDown(window, KEY_RIGHT_CTRL);
+        alt = InputConstants.isKeyDown(window, KEY_LEFT_ALT) || InputConstants.isKeyDown(window, KEY_RIGHT_ALT);
 
         if (wasClicked(IMTClient.KEY_PREV_CATEGORY))
         {

@@ -2,11 +2,13 @@ package xfacthd.itemmodeltransformer.client.util;
 
 import net.minecraft.client.Minecraft;
 import net.neoforged.neoforge.client.settings.IKeyConflictContext;
+import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import xfacthd.itemmodeltransformer.client.handler.TransformHandler;
 
-public final class TransformerKeyConflictContext implements IKeyConflictContext
+public sealed class TransformerKeyConflictContext implements IKeyConflictContext
 {
-    public static final TransformerKeyConflictContext INSTANCE = new TransformerKeyConflictContext();
+    public static final IKeyConflictContext INSTANCE = new TransformerKeyConflictContext();
+    public static final IKeyConflictContext INSTANCE_INC_DEC = new TransformerKeyConflictContext.IncDec();
 
     private TransformerKeyConflictContext() { }
 
@@ -19,6 +21,16 @@ public final class TransformerKeyConflictContext implements IKeyConflictContext
     @Override
     public boolean conflicts(IKeyConflictContext other)
     {
-        return other == INSTANCE;
+        return other == INSTANCE || other == INSTANCE_INC_DEC;
+    }
+
+    private static final class IncDec extends TransformerKeyConflictContext
+    {
+        @Override
+        public boolean conflicts(IKeyConflictContext other)
+        {
+            // Must conflict with IN_GAME to allow modifiers to be used for range adjustment
+            return super.conflicts(other) || other == KeyConflictContext.IN_GAME;
+        }
     }
 }
