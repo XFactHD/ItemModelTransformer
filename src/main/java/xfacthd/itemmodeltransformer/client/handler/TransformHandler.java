@@ -11,7 +11,7 @@ public final class TransformHandler
     private static final ItemTransform SCRATCH_TRANSFORM = new ItemTransform(new Vector3f(), new Vector3f(), new Vector3f(1, 1, 1));
     private static boolean enabled = false;
     private static boolean active = false;
-    private static ItemDisplayContext currContext = ItemDisplayContext.NONE;
+    private static ItemDisplayContext currContext = ItemDisplayContext.THIRD_PERSON_LEFT_HAND;
 
     public static void toggleEnabled()
     {

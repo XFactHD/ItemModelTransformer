@@ -294,9 +294,9 @@ public final class TransformOverlay implements IGuiOverlay
 
     private static void cycleContext(int dir)
     {
-        int idx = TransformHandler.getCurrContext().ordinal();
-        int newIdx = Mth.positiveModulo(idx + dir, CONTEXTS.length);
-        TransformHandler.setCurrContext(CONTEXTS[newIdx]);
+        int idx = TransformHandler.getCurrContext().ordinal() - 1;
+        int newIdx = Mth.positiveModulo(idx + dir, CONTEXTS.length - 1);
+        TransformHandler.setCurrContext(CONTEXTS[newIdx + 1]);
     }
 
     private static void modifyVector(Vector3f vec, float dir, boolean noNegative, boolean wrap, float range)
