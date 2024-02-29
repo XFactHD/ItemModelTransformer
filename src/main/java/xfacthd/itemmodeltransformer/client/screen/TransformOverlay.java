@@ -34,7 +34,7 @@ public final class TransformOverlay implements IGuiOverlay
     private static final int LINE_HEIGHT = 10;
     private static final int LINE_PADDING = 5;
     private static final int HEIGHT_BASE = (LINE_HEIGHT * 2 + LINE_PADDING) * LINE_COUNT + LINE_HEIGHT;
-    private static final int HEIGHT_USAGE = HEIGHT_BASE + (LINE_HEIGHT * 12);
+    private static final int HEIGHT_USAGE = HEIGHT_BASE + (LINE_HEIGHT * 13);
     private static final int TOOLTIP_DIFF = 4;
     private static final int KEY_LEFT_SHIFT = GLFW.GLFW_KEY_LEFT_SHIFT;
     private static final int KEY_RIGHT_SHIFT = GLFW.GLFW_KEY_RIGHT_SHIFT;
@@ -220,8 +220,12 @@ public final class TransformOverlay implements IGuiOverlay
                         Utils.formatKeybind(IMTClient.KEY_LOAD)
                 ),
                 Component.translatable(
-                        "desc.itemmodeltransformer.usage.print",
+                        "desc.itemmodeltransformer.usage.print_json",
                         Utils.formatKeybind(IMTClient.KEY_PRINT_JSON)
+                ),
+                Component.translatable(
+                        "desc.itemmodeltransformer.usage.print_datagen",
+                        Utils.formatKeybind(IMTClient.KEY_PRINT_DATAGEN)
                 )
         };
     }
