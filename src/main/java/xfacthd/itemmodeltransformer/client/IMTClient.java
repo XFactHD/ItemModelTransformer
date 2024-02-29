@@ -13,7 +13,6 @@ import net.neoforged.neoforge.common.util.Lazy;
 import net.neoforged.neoforge.event.TickEvent;
 import org.lwjgl.glfw.GLFW;
 import xfacthd.itemmodeltransformer.ItemModelTransformer;
-import xfacthd.itemmodeltransformer.client.handler.TransformHandler;
 import xfacthd.itemmodeltransformer.client.screen.TransformOverlay;
 import xfacthd.itemmodeltransformer.client.util.TransformerKeyConflictContext;
 import xfacthd.itemmodeltransformer.client.util.Utils;
@@ -30,7 +29,8 @@ public final class IMTClient
     public static final Lazy<KeyMapping> KEY_INCREMENT = makeKeybind("increment", GLFW.GLFW_KEY_KP_ADD, true, true);
     public static final Lazy<KeyMapping> KEY_CLEAR = makeKeybind("clear", GLFW.GLFW_KEY_C, true, false);
     public static final Lazy<KeyMapping> KEY_LOAD = makeKeybind("load", GLFW.GLFW_KEY_L, true, false);
-    public static final Lazy<KeyMapping> KEY_PRINT = makeKeybind("print", GLFW.GLFW_KEY_P, true, false);
+    public static final Lazy<KeyMapping> KEY_PRINT_JSON = makeKeybind("print_json", GLFW.GLFW_KEY_P, true, false);
+    public static final Lazy<KeyMapping> KEY_PRINT_DATAGEN = makeKeybind("print_datagen", GLFW.GLFW_KEY_G, true, false);
     public static final Lazy<KeyMapping> KEY_TOGGLE_USAGE = makeKeybind("toggle_usage", GLFW.GLFW_KEY_H, true, false);
 
     @SubscribeEvent
@@ -45,7 +45,8 @@ public final class IMTClient
         event.register(KEY_INCREMENT.get());
         event.register(KEY_CLEAR.get());
         event.register(KEY_LOAD.get());
-        event.register(KEY_PRINT.get());
+        event.register(KEY_PRINT_JSON.get());
+        event.register(KEY_PRINT_DATAGEN.get());
         event.register(KEY_TOGGLE_USAGE.get());
 
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, IMTClient::onClientTick);
@@ -66,7 +67,7 @@ public final class IMTClient
 
         if (KEY_TOGGLE_TRANSFORMER.get().consumeClick())
         {
-            TransformHandler.toggleEnabled();
+            TransformOverlay.toggleEnabled();
         }
         TransformOverlay.handleInput();
     }

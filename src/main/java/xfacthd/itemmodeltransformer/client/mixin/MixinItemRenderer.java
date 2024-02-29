@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xfacthd.itemmodeltransformer.client.handler.TransformHandler;
+import xfacthd.itemmodeltransformer.client.screen.TransformOverlay;
 
 @Mixin(ItemRenderer.class)
 @SuppressWarnings("MethodMayBeStatic")
@@ -35,7 +35,7 @@ public final class MixinItemRenderer
             CallbackInfo ci
     )
     {
-        TransformHandler.activateTransformer(stack);
+        TransformOverlay.activateTransformer(stack);
     }
 
     @Inject(
@@ -58,6 +58,6 @@ public final class MixinItemRenderer
             CallbackInfo ci
     )
     {
-        TransformHandler.deactivateTransformer();
+        TransformOverlay.deactivateTransformer();
     }
 }

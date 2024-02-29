@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xfacthd.itemmodeltransformer.client.handler.TransformHandler;
+import xfacthd.itemmodeltransformer.client.screen.TransformOverlay;
 
 @Mixin(ItemTransforms.class)
 @SuppressWarnings("MethodMayBeStatic")
@@ -22,9 +22,9 @@ public final class MixinItemTransforms
             ItemDisplayContext context, CallbackInfoReturnable<ItemTransform> cir
     )
     {
-        if (TransformHandler.matchesCurrentContext(context))
+        if (TransformOverlay.matchesCurrentContext(context))
         {
-            cir.setReturnValue(TransformHandler.getScratchTransform());
+            cir.setReturnValue(TransformOverlay.getScratchTransform());
         }
     }
 }

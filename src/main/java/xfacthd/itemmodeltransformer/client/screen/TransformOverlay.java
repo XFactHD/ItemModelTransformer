@@ -2,6 +2,7 @@ package xfacthd.itemmodeltransformer.client.screen;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.Util;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -20,8 +21,9 @@ import net.neoforged.neoforge.common.util.Lazy;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import xfacthd.itemmodeltransformer.client.IMTClient;
-import xfacthd.itemmodeltransformer.client.handler.TransformHandler;
 import xfacthd.itemmodeltransformer.client.util.Utils;
+
+import java.util.Arrays;
 
 @SuppressWarnings("deprecation")
 public final class TransformOverlay implements IGuiOverlay
@@ -48,7 +50,8 @@ public final class TransformOverlay implements IGuiOverlay
     private static final Component DESC_CAT_POST_ROTATION = Component.translatable("desc.itemmodeltransformer.category.post_rotation");
     private static final Component MSG_CLEARED = Component.translatable("msg.itemmodeltransformer.cleared");
     private static final Component MSG_LOADED = Component.translatable("msg.itemmodeltransformer.loaded_from_item");
-    private static final Component MSG_COPIED = Component.translatable("msg.itemmodeltransformer.copied_to_clipboard");
+    private static final Component MSG_COPIED_JSON = Component.translatable("msg.itemmodeltransformer.copied_json_to_clipboard");
+    private static final Component MSG_COPIED_CODE = Component.translatable("msg.itemmodeltransformer.copied_code_to_clipboard");
     private static final Component DESC_KEY_CTRL = Component.translatable("desc.itemmodeltransformer.key.ctrl");
     private static final Component DESC_KEY_CMD = Component.translatable("desc.itemmodeltransformer.key.cmd");
     private static final Component DESC_KEY_SHIFT = Component.translatable("desc.itemmodeltransformer.key.shift");
@@ -70,6 +73,18 @@ public final class TransformOverlay implements IGuiOverlay
             Utils.formatKeyCombination(DESC_KEY_SHIFT, Minecraft.ON_OSX ? DESC_KEY_CMD : DESC_KEY_CTRL)
     );
 
+    private static final ItemTransform[] SCRATCH_TRANSFORMS = Util.make(
+            new ItemTransform[CONTEXTS.length - 1],
+            arr -> Arrays.setAll(arr, i -> new ItemTransform(
+                    ItemTransform.Deserializer.DEFAULT_ROTATION,
+                    ItemTransform.Deserializer.DEFAULT_TRANSLATION,
+                    ItemTransform.Deserializer.DEFAULT_SCALE,
+                    ItemTransform.Deserializer.DEFAULT_ROTATION
+            ))
+    );
+    private static boolean enabled = false;
+    private static boolean active = false;
+    private static ItemDisplayContext currContext = ItemDisplayContext.THIRD_PERSON_LEFT_HAND;
     private static int line = 0;
     private static int element = 0;
     private static boolean showUsage = false;
@@ -80,7 +95,7 @@ public final class TransformOverlay implements IGuiOverlay
     @Override
     public void render(ExtendedGui gui, GuiGraphics graphics, float partialTick, int screenWidth, int screenHeight)
     {
-        if (!TransformHandler.isEnabled()) return;
+        if (!enabled) return;
 
         Component[] usageLines = makeUsageLines();
 
@@ -93,12 +108,11 @@ public final class TransformOverlay implements IGuiOverlay
         graphics.drawManaged(() ->
         {
             Font font = gui.getFont();
-            ItemDisplayContext ctx = TransformHandler.getCurrContext();
-            ItemTransform xform = TransformHandler.getScratchTransform();
+            ItemTransform xform = getScratchTransform();
 
             boolean selected = line == 0;
             graphics.drawString(font, DESC_CAT_TYPE, 3, 3, selected ? 0x66FF66 : 0xFFFFFF, false);
-            graphics.drawString(font, ctx.getSerializedName(), 3, 13, 0xFFFFFF, false);
+            graphics.drawString(font, currContext.getSerializedName(), 3, 13, 0xFFFFFF, false);
 
             selected = line == 1;
             graphics.drawString(font, DESC_CAT_ROTATION, 3, 28, selected ? 0x66FF66 : 0xFFFFFF, false);
@@ -122,6 +136,37 @@ public final class TransformOverlay implements IGuiOverlay
                 graphics.drawString(font, usageLines[i], 3, 128 + (LINE_HEIGHT * i), 0xFFFFFF, false);
             }
         });
+    }
+
+    public static void toggleEnabled()
+    {
+        enabled = !enabled;
+    }
+
+    public static boolean isEnabled()
+    {
+        return enabled;
+    }
+
+    public static ItemTransform getScratchTransform()
+    {
+        return SCRATCH_TRANSFORMS[currContext.ordinal() - 1];
+    }
+
+    public static boolean matchesCurrentContext(ItemDisplayContext context)
+    {
+        return enabled && active && context == currContext;
+    }
+
+    public static void activateTransformer(ItemStack stack)
+    {
+        // noinspection ConstantConditions
+        active = enabled && stack.getItem() == Minecraft.getInstance().player.getMainHandItem().getItem();
+    }
+
+    public static void deactivateTransformer()
+    {
+        active = false;
     }
 
     private static Component[] makeUsageLines()
@@ -176,7 +221,7 @@ public final class TransformOverlay implements IGuiOverlay
                 ),
                 Component.translatable(
                         "desc.itemmodeltransformer.usage.print",
-                        Utils.formatKeybind(IMTClient.KEY_PRINT)
+                        Utils.formatKeybind(IMTClient.KEY_PRINT_JSON)
                 )
         };
     }
@@ -193,7 +238,7 @@ public final class TransformOverlay implements IGuiOverlay
 
     public static void handleInput()
     {
-        if (!TransformHandler.isEnabled())
+        if (!enabled)
         {
             releaseAllKeys();
             return;
@@ -222,37 +267,37 @@ public final class TransformOverlay implements IGuiOverlay
         }
         else if (wasClicked(IMTClient.KEY_DECREMENT))
         {
-            ItemTransform xform = TransformHandler.getScratchTransform();
+            ItemTransform xform = getScratchTransform();
             switch (line)
             {
                 case 0 -> cycleContext(-1);
-                case 1 -> modifyVector(xform.rotation, -1F, false, true, 360F);
+                case 1 -> modifyVector(xform.rotation, -1F, true, 360F);
                 // Translation is a special snowflake and gets divided by 16, see ItemTransform.Deserializer
-                case 2 -> modifyVector(xform.translation, -.0625F, false, false, 0F);
-                case 3 -> modifyVector(xform.scale, -1F, true, false, 0F);
-                case 4 -> modifyVector(xform.rightRotation, -1F, false, true, 360F);
+                case 2 -> modifyVector(xform.translation, -.0625F, false, ItemTransform.Deserializer.MAX_TRANSLATION);
+                case 3 -> modifyVector(xform.scale, -1F, false, ItemTransform.Deserializer.MAX_SCALE);
+                case 4 -> modifyVector(xform.rightRotation, -1F, true, 360F);
             }
         }
         else if (wasClicked(IMTClient.KEY_INCREMENT))
         {
-            ItemTransform xform = TransformHandler.getScratchTransform();
+            ItemTransform xform = getScratchTransform();
             switch (line)
             {
                 case 0 -> cycleContext(1);
-                case 1 -> modifyVector(xform.rotation, 1F, false, true, 360F);
+                case 1 -> modifyVector(xform.rotation, 1F, true, 360F);
                 // Translation is a special snowflake and gets divided by 16, see ItemTransform.Deserializer
-                case 2 -> modifyVector(xform.translation, .0625F, false, false, 0F);
-                case 3 -> modifyVector(xform.scale, 1F, true, false, 0F);
-                case 4 -> modifyVector(xform.rightRotation, 1F, false, true, 360F);
+                case 2 -> modifyVector(xform.translation, .0625F, false, ItemTransform.Deserializer.MAX_TRANSLATION);
+                case 3 -> modifyVector(xform.scale, 1F, false, ItemTransform.Deserializer.MAX_SCALE);
+                case 4 -> modifyVector(xform.rightRotation, 1F, true, 360F);
             }
         }
         else if (wasClicked(IMTClient.KEY_CLEAR))
         {
-            ItemTransform xform = TransformHandler.getScratchTransform();
-            xform.rotation.set(0F, 0F, 0F);
-            xform.translation.set(0F, 0F, 0F);
-            xform.scale.set(1F, 1F, 1F);
-            xform.rightRotation.set(0F, 0F, 0F);
+            ItemTransform xform = getScratchTransform();
+            xform.rotation.set(ItemTransform.Deserializer.DEFAULT_ROTATION);
+            xform.translation.set(ItemTransform.Deserializer.DEFAULT_TRANSLATION);
+            xform.scale.set(ItemTransform.Deserializer.DEFAULT_SCALE);
+            xform.rightRotation.set(ItemTransform.Deserializer.DEFAULT_ROTATION);
 
             //noinspection ConstantConditions
             Minecraft.getInstance().player.displayClientMessage(MSG_CLEARED, true);
@@ -265,10 +310,10 @@ public final class TransformOverlay implements IGuiOverlay
             if (!stack.isEmpty())
             {
                 BakedModel model = Minecraft.getInstance().getItemRenderer().getModel(stack, player.level(), player, 0);
-                ItemTransform srcXform = model.getTransforms().getTransform(TransformHandler.getCurrContext());
+                ItemTransform srcXform = model.getTransforms().getTransform(currContext);
                 if (srcXform != ItemTransform.NO_TRANSFORM)
                 {
-                    ItemTransform xform = TransformHandler.getScratchTransform();
+                    ItemTransform xform = getScratchTransform();
                     xform.rotation.set(srcXform.rotation);
                     xform.translation.set(srcXform.translation);
                     xform.scale.set(srcXform.scale);
@@ -277,14 +322,19 @@ public final class TransformOverlay implements IGuiOverlay
                 }
             }
         }
-        else if (wasClicked(IMTClient.KEY_PRINT))
+        else if (wasClicked(IMTClient.KEY_PRINT_JSON))
         {
-            String out = Utils.encodeItemTransform(
-                    TransformHandler.getCurrContext(), TransformHandler.getScratchTransform()
-            );
+            String out = Utils.encodeItemTransform(SCRATCH_TRANSFORMS);
             Minecraft.getInstance().keyboardHandler.setClipboard(out);
             //noinspection ConstantConditions
-            Minecraft.getInstance().player.displayClientMessage(MSG_COPIED, true);
+            Minecraft.getInstance().player.displayClientMessage(MSG_COPIED_JSON, true);
+        }
+        else if (wasClicked(IMTClient.KEY_PRINT_DATAGEN))
+        {
+            String out = Utils.printDatagenCode(SCRATCH_TRANSFORMS);
+            Minecraft.getInstance().keyboardHandler.setClipboard(out);
+            //noinspection ConstantConditions
+            Minecraft.getInstance().player.displayClientMessage(MSG_COPIED_CODE, true);
         }
         else if (wasClicked(IMTClient.KEY_TOGGLE_USAGE))
         {
@@ -294,12 +344,12 @@ public final class TransformOverlay implements IGuiOverlay
 
     private static void cycleContext(int dir)
     {
-        int idx = TransformHandler.getCurrContext().ordinal() - 1;
+        int idx = currContext.ordinal() - 1;
         int newIdx = Mth.positiveModulo(idx + dir, CONTEXTS.length - 1);
-        TransformHandler.setCurrContext(CONTEXTS[newIdx + 1]);
+        currContext = CONTEXTS[newIdx + 1];
     }
 
-    private static void modifyVector(Vector3f vec, float dir, boolean noNegative, boolean wrap, float range)
+    private static void modifyVector(Vector3f vec, float dir, boolean wrap, float range)
     {
         if (ctrl && shift)
         {
@@ -323,9 +373,9 @@ public final class TransformOverlay implements IGuiOverlay
         {
             component = Mth.positiveModulo(component, range);
         }
-        else if (noNegative && component < 0F)
+        else
         {
-            component = 0F;
+            component = Mth.clamp(component, -range, range);
         }
         vec.setComponent(element, component);
     }
@@ -356,6 +406,6 @@ public final class TransformOverlay implements IGuiOverlay
         Utils.releaseKey(IMTClient.KEY_INCREMENT.get());
         Utils.releaseKey(IMTClient.KEY_CLEAR.get());
         Utils.releaseKey(IMTClient.KEY_LOAD.get());
-        Utils.releaseKey(IMTClient.KEY_PRINT.get());
+        Utils.releaseKey(IMTClient.KEY_PRINT_JSON.get());
     }
 }

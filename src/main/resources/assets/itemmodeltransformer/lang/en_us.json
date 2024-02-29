@@ -9,13 +9,14 @@
     "key.itemmodeltransformer.increment": "Increment",
     "key.itemmodeltransformer.clear": "Reset values",
     "key.itemmodeltransformer.load": "Load values from held item",
-    "key.itemmodeltransformer.print": "Copy to clipboard as JSON",
+    "key.itemmodeltransformer.print_json": "Copy to clipboard as JSON",
+    "key.itemmodeltransformer.print_datagen": "Copy to clipboard as datagen code",
     "key.itemmodeltransformer.toggle_usage": "Show/hide usage info",
     "desc.itemmodeltransformer.category.type": "Transform type:",
     "desc.itemmodeltransformer.category.rotation": "Rotation:",
     "desc.itemmodeltransformer.category.translation": "Translation:",
     "desc.itemmodeltransformer.category.scale": "Scale:",
-    "desc.itemmodeltransformer.category.post_rotation": "Post rotation:",
+    "desc.itemmodeltransformer.category.post_rotation": "Post rotation (non-standard):",
     "desc.itemmodeltransformer.usage.show": "Usage (press %s to show):",
     "desc.itemmodeltransformer.usage.hide": "Usage (press %s to hide):",
     "desc.itemmodeltransformer.usage.prev_category": "- Previous category: %s",
@@ -36,5 +37,6 @@
     "desc.itemmodeltransformer.key.alt": "Alt",
     "msg.itemmodeltransformer.cleared": "Cleared transform values",
     "msg.itemmodeltransformer.loaded_from_item": "Loaded transform from held item",
-    "msg.itemmodeltransformer.copied_to_clipboard": "Copied JSON to clipboard"
+    "msg.itemmodeltransformer.copied_json_to_clipboard": "Copied JSON to clipboard",
+    "msg.itemmodeltransformer.copied_code_to_clipboard": "Copied datagen code to clipboard"
 }

@@ -3,7 +3,7 @@ package xfacthd.itemmodeltransformer.client.util;
 import net.minecraft.client.Minecraft;
 import net.neoforged.neoforge.client.settings.IKeyConflictContext;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
-import xfacthd.itemmodeltransformer.client.handler.TransformHandler;
+import xfacthd.itemmodeltransformer.client.screen.TransformOverlay;
 
 public sealed class TransformerKeyConflictContext implements IKeyConflictContext
 {
@@ -15,7 +15,7 @@ public sealed class TransformerKeyConflictContext implements IKeyConflictContext
     @Override
     public boolean isActive()
     {
-        return TransformHandler.isEnabled() && Minecraft.getInstance().screen == null;
+        return TransformOverlay.isEnabled() && Minecraft.getInstance().screen == null;
     }
 
     @Override

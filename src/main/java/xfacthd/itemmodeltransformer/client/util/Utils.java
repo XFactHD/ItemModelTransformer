@@ -1,6 +1,7 @@
 package xfacthd.itemmodeltransformer.client.util;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonWriter;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -40,6 +41,7 @@ public final class Utils
     );
     private static final Style STYLE_DEFAULT = Style.EMPTY.applyFormat(ChatFormatting.WHITE);
     private static final Style STYLE_SELECTED = Style.EMPTY.withColor(0xFF6666);
+    private static final String CODE_INDENT = " ".repeat(4);
 
     public static Component printVector(Vector3f vec, boolean selected, int element)
     {
@@ -70,9 +72,20 @@ public final class Utils
         return result.append(Component.literal(text).setStyle(selected ? STYLE_SELECTED : STYLE_DEFAULT));
     }
 
-    public static String encodeItemTransform(ItemDisplayContext ctx, ItemTransform xform)
+    public static String encodeItemTransform(ItemTransform[] xforms)
     {
-        JsonElement obj = TRANSFORM_CODEC.encodeStart(JsonOps.INSTANCE, xform).getOrThrow(false, err -> {});
+        JsonObject obj = new JsonObject();
+        for (ItemDisplayContext ctx : ItemDisplayContext.values())
+        {
+            if (ctx == ItemDisplayContext.NONE) continue;
+
+            ItemTransform xform = xforms[ctx.ordinal() - 1];
+            if (!xform.equals(ItemTransform.NO_TRANSFORM))
+            {
+                JsonElement xformElem = TRANSFORM_CODEC.encodeStart(JsonOps.INSTANCE, xform).getOrThrow(false, err -> { });
+                obj.add(ctx.getSerializedName(), xformElem);
+            }
+        }
 
         try
         {
@@ -81,11 +94,58 @@ public final class Utils
             jsonWriter.setLenient(true);
             jsonWriter.setIndent("  ");
             Streams.write(obj, jsonWriter);
-            return "\"%s\": %s".formatted(ctx.getSerializedName(), stringWriter);
+            return "\"display\": %s".formatted(stringWriter);
         }
         catch (IOException e)
         {
-            throw new AssertionError(e);
+            throw new RuntimeException("Encountered an exception while printing item transform JSON", e);
+        }
+    }
+
+    public static String printDatagenCode(ItemTransform[] xforms)
+    {
+        StringBuilder builder = new StringBuilder("getBuilder(\"<your item model name>\")");
+        builder.append("\n").append(CODE_INDENT.repeat(2)).append(".transforms()");
+        for (ItemDisplayContext ctx : ItemDisplayContext.values())
+        {
+            if (ctx == ItemDisplayContext.NONE) continue;
+
+            ItemTransform xform = xforms[ctx.ordinal() - 1];
+            if (!xform.equals(ItemTransform.NO_TRANSFORM))
+            {
+                builder.append("\n")
+                        .append(CODE_INDENT.repeat(3))
+                        .append(".transform(ItemDisplayContext.")
+                        .append(ctx)
+                        .append(")");
+
+                printTransformEntry(builder, "rotation", xform.rotation, 1F, ItemTransform.Deserializer.DEFAULT_ROTATION);
+                // Translation is a special snowflake and gets divided by 16, see ItemTransform.Deserializer
+                printTransformEntry(builder, "translation", xform.translation, 16F, ItemTransform.Deserializer.DEFAULT_TRANSLATION);
+                printTransformEntry(builder, "scale", xform.scale, 1F, ItemTransform.Deserializer.DEFAULT_SCALE);
+                printTransformEntry(builder, "rightRotation", xform.rightRotation, 1F, ItemTransform.Deserializer.DEFAULT_ROTATION);
+
+                builder.append("\n").append(CODE_INDENT.repeat(4)).append(".end()");
+            }
+        }
+        return builder.append("\n").append(CODE_INDENT.repeat(3)).append(".end();").toString();
+    }
+
+    private static void printTransformEntry(StringBuilder builder, String mthName, Vector3f value, float multiplier, Vector3f defaultValue)
+    {
+        if (!value.equals(defaultValue))
+        {
+            builder.append("\n")
+                    .append(CODE_INDENT.repeat(4))
+                    .append(".")
+                    .append(mthName)
+                    .append("(")
+                    .append(value.x * multiplier)
+                    .append(", ")
+                    .append(value.y * multiplier)
+                    .append(", ")
+                    .append(value.z * multiplier)
+                    .append(")");
         }
     }
 
