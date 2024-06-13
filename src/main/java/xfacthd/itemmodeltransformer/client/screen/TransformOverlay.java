@@ -3,10 +3,8 @@ package xfacthd.itemmodeltransformer.client.screen;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.Util;
-import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.*;
+import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.resources.model.BakedModel;
@@ -15,8 +13,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.gui.overlay.ExtendedGui;
-import net.neoforged.neoforge.client.gui.overlay.IGuiOverlay;
 import net.neoforged.neoforge.common.util.Lazy;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
@@ -26,7 +22,7 @@ import xfacthd.itemmodeltransformer.client.util.Utils;
 import java.util.Arrays;
 
 @SuppressWarnings("deprecation")
-public final class TransformOverlay implements IGuiOverlay
+public final class TransformOverlay implements LayeredDraw.Layer
 {
     private static final ItemDisplayContext[] CONTEXTS = ItemDisplayContext.values();
     private static final int LINE_COUNT = 5;
@@ -93,21 +89,21 @@ public final class TransformOverlay implements IGuiOverlay
     private static boolean alt = false;
 
     @Override
-    public void render(ExtendedGui gui, GuiGraphics graphics, float partialTick, int screenWidth, int screenHeight)
+    public void render(GuiGraphics graphics, DeltaTracker deltaTracker)
     {
         if (!enabled) return;
 
         Component[] usageLines = makeUsageLines();
+        Font font = Minecraft.getInstance().font;
 
         RenderSystem.enableBlend();
-        int width = calculateWidth(gui.getFont(), usageLines) - TOOLTIP_DIFF;
+        int width = calculateWidth(font, usageLines) - TOOLTIP_DIFF;
         int height = (showUsage ? HEIGHT_USAGE : HEIGHT_BASE) - TOOLTIP_DIFF;
         TooltipRenderUtil.renderTooltipBackground(graphics, 4, 4, width, height, 0);
         RenderSystem.disableBlend();
 
         graphics.drawManaged(() ->
         {
-            Font font = gui.getFont();
             ItemTransform xform = getScratchTransform();
 
             boolean selected = line == 0;

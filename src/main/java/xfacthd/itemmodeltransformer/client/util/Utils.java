@@ -36,9 +36,7 @@ public final class Utils
             ExtraCodecs.VECTOR3F.fieldOf("scale").forGetter(xform -> xform.scale),
             ExtraCodecs.VECTOR3F.fieldOf("right_rotation").forGetter(xform -> xform.rightRotation)
     ).apply(inst, ItemTransform::new));
-    private static final Style FULL_SPACE_FONT = Style.EMPTY.withFont(
-            new ResourceLocation(ItemModelTransformer.MODID, "full_space")
-    );
+    private static final Style FULL_SPACE_FONT = Style.EMPTY.withFont(Utils.rl("full_space"));
     private static final Style STYLE_DEFAULT = Style.EMPTY.applyFormat(ChatFormatting.WHITE);
     private static final Style STYLE_SELECTED = Style.EMPTY.withColor(0xFF6666);
     private static final String CODE_INDENT = " ".repeat(4);
@@ -82,7 +80,7 @@ public final class Utils
             ItemTransform xform = xforms[ctx.ordinal() - 1];
             if (!xform.equals(ItemTransform.NO_TRANSFORM))
             {
-                JsonElement xformElem = TRANSFORM_CODEC.encodeStart(JsonOps.INSTANCE, xform).getOrThrow(false, err -> { });
+                JsonElement xformElem = TRANSFORM_CODEC.encodeStart(JsonOps.INSTANCE, xform).getOrThrow();
                 obj.add(ctx.getSerializedName(), xformElem);
             }
         }
@@ -184,7 +182,7 @@ public final class Utils
 
     public static ResourceLocation rl(String path)
     {
-        return new ResourceLocation(ItemModelTransformer.MODID, path);
+        return ResourceLocation.fromNamespaceAndPath(ItemModelTransformer.MOD_ID, path);
     }
 
 

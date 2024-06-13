@@ -10,7 +10,6 @@ issueTrackerURL="https://github.com/XFactHD/ItemModelTransformer"
 	displayURL="https://www.curseforge.com/minecraft/mc-mods/itemmodeltransformer"
 	logoFile="logo.png"
 	authors="XFactHD"
-	displayTest="IGNORE_ALL_VERSION"
 	description=''''''
 
 [[mixins]]

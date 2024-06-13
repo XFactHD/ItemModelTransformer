@@ -3,21 +3,18 @@ package xfacthd.itemmodeltransformer.client;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.bus.api.*;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.client.event.RegisterGuiOverlaysEvent;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.Lazy;
-import net.neoforged.neoforge.event.TickEvent;
 import org.lwjgl.glfw.GLFW;
 import xfacthd.itemmodeltransformer.ItemModelTransformer;
 import xfacthd.itemmodeltransformer.client.screen.TransformOverlay;
 import xfacthd.itemmodeltransformer.client.util.TransformerKeyConflictContext;
 import xfacthd.itemmodeltransformer.client.util.Utils;
 
-@Mod.EventBusSubscriber(modid = ItemModelTransformer.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@Mod(value = ItemModelTransformer.MOD_ID, dist = Dist.CLIENT)
 public final class IMTClient
 {
     private static final Lazy<KeyMapping> KEY_TOGGLE_TRANSFORMER = makeKeybind("toggle", GLFW.GLFW_KEY_I, false, false);
@@ -33,8 +30,15 @@ public final class IMTClient
     public static final Lazy<KeyMapping> KEY_PRINT_DATAGEN = makeKeybind("print_datagen", GLFW.GLFW_KEY_G, true, false);
     public static final Lazy<KeyMapping> KEY_TOGGLE_USAGE = makeKeybind("toggle_usage", GLFW.GLFW_KEY_H, true, false);
 
-    @SubscribeEvent
-    public static void onRegisterKeyMappings(final RegisterKeyMappingsEvent event)
+    public IMTClient(IEventBus modBus)
+    {
+        modBus.addListener(IMTClient::onRegisterKeyMappings);
+        modBus.addListener(IMTClient::onRegisterGuiOverlays);
+
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, IMTClient::onClientTick);
+    }
+
+    private static void onRegisterKeyMappings(final RegisterKeyMappingsEvent event)
     {
         event.register(KEY_TOGGLE_TRANSFORMER.get());
         event.register(KEY_PREV_CATEGORY.get());
@@ -48,20 +52,15 @@ public final class IMTClient
         event.register(KEY_PRINT_JSON.get());
         event.register(KEY_PRINT_DATAGEN.get());
         event.register(KEY_TOGGLE_USAGE.get());
-
-        NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, IMTClient::onClientTick);
     }
 
-    @SubscribeEvent
-    public static void onRegisterGuiOverlays(final RegisterGuiOverlaysEvent event)
+    private static void onRegisterGuiOverlays(final RegisterGuiLayersEvent event)
     {
         event.registerAboveAll(Utils.rl("transform_editor"), new TransformOverlay());
     }
 
-    private static void onClientTick(final TickEvent.ClientTickEvent event)
+    private static void onClientTick(final ClientTickEvent.Pre event)
     {
-        if (event.phase != TickEvent.Phase.START) return;
-
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) return;
 
@@ -77,9 +76,9 @@ public final class IMTClient
         return Lazy.of(() ->
         {
             KeyMapping keybind = new KeyMapping(
-                    "key." + ItemModelTransformer.MODID +"." + name,
+                    "key." + ItemModelTransformer.MOD_ID +"." + name,
                     key,
-                    "key.categories." + ItemModelTransformer.MODID
+                    "key.categories." + ItemModelTransformer.MOD_ID
             );
             if (useConflictCtx)
             {
@@ -95,8 +94,4 @@ public final class IMTClient
             return keybind;
         });
     }
-
-
-
-    private IMTClient() { }
 }
