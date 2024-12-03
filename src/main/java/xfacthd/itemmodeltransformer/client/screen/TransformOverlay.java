@@ -3,14 +3,20 @@ package xfacthd.itemmodeltransformer.client.screen;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.Util;
-import net.minecraft.client.*;
-import net.minecraft.client.gui.*;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.renderer.block.model.ItemTransform;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.util.Lazy;
@@ -21,10 +27,10 @@ import xfacthd.itemmodeltransformer.client.util.Utils;
 
 import java.util.Arrays;
 
-@SuppressWarnings("deprecation")
 public final class TransformOverlay implements LayeredDraw.Layer
 {
     private static final ItemDisplayContext[] CONTEXTS = ItemDisplayContext.values();
+    private static final ItemStackRenderState SCRATCH_RENDER_STATE = new ItemStackRenderState();
     private static final int LINE_COUNT = 5;
     private static final int ELEMENT_COUNT = 3;
     private static final int LINE_HEIGHT = 10;
@@ -99,39 +105,36 @@ public final class TransformOverlay implements LayeredDraw.Layer
         RenderSystem.enableBlend();
         int width = calculateWidth(font, usageLines) - TOOLTIP_DIFF;
         int height = (showUsage ? HEIGHT_USAGE : HEIGHT_BASE) - TOOLTIP_DIFF;
-        TooltipRenderUtil.renderTooltipBackground(graphics, 4, 4, width, height, 0);
+        TooltipRenderUtil.renderTooltipBackground(graphics, 4, 4, width, height, 0, null);
         RenderSystem.disableBlend();
 
-        graphics.drawManaged(() ->
+        ItemTransform xform = getScratchTransform();
+
+        boolean selected = line == 0;
+        graphics.drawString(font, DESC_CAT_TYPE, 3, 3, selected ? 0x66FF66 : 0xFFFFFF, false);
+        graphics.drawString(font, currContext.getSerializedName(), 3, 13, 0xFFFFFF, false);
+
+        selected = line == 1;
+        graphics.drawString(font, DESC_CAT_ROTATION, 3, 28, selected ? 0x66FF66 : 0xFFFFFF, false);
+        graphics.drawString(font, Utils.printVector(xform.rotation, selected, element), 3, 38, 0xFFFFFF, false);
+
+        selected = line == 2;
+        graphics.drawString(font, DESC_CAT_TRANSLATION, 3, 53, selected ? 0x66FF66 : 0xFFFFFF, false);
+        // Translation is a special snowflake and gets divided by 16, see ItemTransform.Deserializer
+        graphics.drawString(font, Utils.printVector(xform.translation, selected, element, 16F), 3, 63, 0xFFFFFF, false);
+
+        selected = line == 3;
+        graphics.drawString(font, DESC_CAT_SCALE, 3, 78, selected ? 0x66FF66 : 0xFFFFFF, false);
+        graphics.drawString(font, Utils.printVector(xform.scale, selected, element), 3, 88, 0xFFFFFF, false);
+
+        selected = line == 4;
+        graphics.drawString(font, DESC_CAT_POST_ROTATION, 3, 103, selected ? 0x66FF66 : 0xFFFFFF, false);
+        graphics.drawString(font, Utils.printVector(xform.rightRotation, selected, element), 3, 113, 0xFFFFFF, false);
+
+        for (int i = 0; i < usageLines.length; i++)
         {
-            ItemTransform xform = getScratchTransform();
-
-            boolean selected = line == 0;
-            graphics.drawString(font, DESC_CAT_TYPE, 3, 3, selected ? 0x66FF66 : 0xFFFFFF, false);
-            graphics.drawString(font, currContext.getSerializedName(), 3, 13, 0xFFFFFF, false);
-
-            selected = line == 1;
-            graphics.drawString(font, DESC_CAT_ROTATION, 3, 28, selected ? 0x66FF66 : 0xFFFFFF, false);
-            graphics.drawString(font, Utils.printVector(xform.rotation, selected, element), 3, 38, 0xFFFFFF, false);
-
-            selected = line == 2;
-            graphics.drawString(font, DESC_CAT_TRANSLATION, 3, 53, selected ? 0x66FF66 : 0xFFFFFF, false);
-            // Translation is a special snowflake and gets divided by 16, see ItemTransform.Deserializer
-            graphics.drawString(font, Utils.printVector(xform.translation, selected, element, 16F), 3, 63, 0xFFFFFF, false);
-
-            selected = line == 3;
-            graphics.drawString(font, DESC_CAT_SCALE, 3, 78, selected ? 0x66FF66 : 0xFFFFFF, false);
-            graphics.drawString(font, Utils.printVector(xform.scale, selected, element), 3, 88, 0xFFFFFF, false);
-
-            selected = line == 4;
-            graphics.drawString(font, DESC_CAT_POST_ROTATION, 3, 103, selected ? 0x66FF66 : 0xFFFFFF, false);
-            graphics.drawString(font, Utils.printVector(xform.rightRotation, selected, element), 3, 113, 0xFFFFFF, false);
-
-            for (int i = 0; i < usageLines.length; i++)
-            {
-                graphics.drawString(font, usageLines[i], 3, 128 + (LINE_HEIGHT * i), 0xFFFFFF, false);
-            }
-        });
+            graphics.drawString(font, usageLines[i], 3, 128 + (LINE_HEIGHT * i), 0xFFFFFF, false);
+        }
     }
 
     public static void toggleEnabled()
@@ -154,10 +157,10 @@ public final class TransformOverlay implements LayeredDraw.Layer
         return enabled && active && context == currContext;
     }
 
-    public static void activateTransformer(ItemStack stack)
+    public static void activateTransformer(Item item)
     {
         // noinspection ConstantConditions
-        active = enabled && stack.getItem() == Minecraft.getInstance().player.getMainHandItem().getItem();
+        active = enabled && item == Minecraft.getInstance().player.getMainHandItem().getItem();
     }
 
     public static void deactivateTransformer()
@@ -309,8 +312,10 @@ public final class TransformOverlay implements LayeredDraw.Layer
             ItemStack stack = player.getMainHandItem();
             if (!stack.isEmpty())
             {
-                BakedModel model = Minecraft.getInstance().getItemRenderer().getModel(stack, player.level(), player, 0);
-                ItemTransform srcXform = model.getTransforms().getTransform(currContext);
+                ItemModelResolver resolver = Minecraft.getInstance().getItemModelResolver();
+                resolver.updateForTopItem(SCRATCH_RENDER_STATE, stack, currContext, false, player.level(), player, 0);
+
+                ItemTransform srcXform = SCRATCH_RENDER_STATE.transform();
                 if (srcXform != ItemTransform.NO_TRANSFORM)
                 {
                     ItemTransform xform = getScratchTransform();
@@ -320,6 +325,8 @@ public final class TransformOverlay implements LayeredDraw.Layer
                     xform.rightRotation.set(srcXform.rightRotation);
                     player.displayClientMessage(MSG_LOADED, true);
                 }
+
+                SCRATCH_RENDER_STATE.clear();
             }
         }
         else if (wasClicked(IMTClient.KEY_PRINT_JSON))

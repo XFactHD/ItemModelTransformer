@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="${loader_version_range}"
+loaderVersion="[1,)"
 license="LGPL v3"
 issueTrackerURL="https://github.com/XFactHD/ItemModelTransformer"
 
