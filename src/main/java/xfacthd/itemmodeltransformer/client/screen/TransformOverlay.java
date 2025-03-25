@@ -1,7 +1,6 @@
 package xfacthd.itemmodeltransformer.client.screen;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.Util;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
@@ -21,8 +20,10 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.util.Lazy;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.lwjgl.glfw.GLFW;
 import xfacthd.itemmodeltransformer.client.IMTClient;
+import xfacthd.itemmodeltransformer.client.mixin.AccessorItemStackRenderStateLayer;
 import xfacthd.itemmodeltransformer.client.util.Utils;
 
 import java.util.Arrays;
@@ -78,14 +79,13 @@ public final class TransformOverlay implements LayeredDraw.Layer
     private static final ItemTransform[] SCRATCH_TRANSFORMS = Util.make(
             new ItemTransform[CONTEXTS.length - 1],
             arr -> Arrays.setAll(arr, i -> new ItemTransform(
-                    ItemTransform.Deserializer.DEFAULT_ROTATION,
-                    ItemTransform.Deserializer.DEFAULT_TRANSLATION,
-                    ItemTransform.Deserializer.DEFAULT_SCALE,
-                    ItemTransform.Deserializer.DEFAULT_ROTATION
+                    new Vector3f(ItemTransform.Deserializer.DEFAULT_ROTATION),
+                    new Vector3f(ItemTransform.Deserializer.DEFAULT_TRANSLATION),
+                    new Vector3f(ItemTransform.Deserializer.DEFAULT_SCALE),
+                    new Vector3f(ItemTransform.Deserializer.DEFAULT_ROTATION)
             ))
     );
     private static boolean enabled = false;
-    private static boolean active = false;
     private static ItemDisplayContext currContext = ItemDisplayContext.THIRD_PERSON_LEFT_HAND;
     private static int line = 0;
     private static int element = 0;
@@ -102,11 +102,9 @@ public final class TransformOverlay implements LayeredDraw.Layer
         Component[] usageLines = makeUsageLines();
         Font font = Minecraft.getInstance().font;
 
-        RenderSystem.enableBlend();
         int width = calculateWidth(font, usageLines) - TOOLTIP_DIFF;
         int height = (showUsage ? HEIGHT_USAGE : HEIGHT_BASE) - TOOLTIP_DIFF;
         TooltipRenderUtil.renderTooltipBackground(graphics, 4, 4, width, height, 0, null);
-        RenderSystem.disableBlend();
 
         ItemTransform xform = getScratchTransform();
 
@@ -116,20 +114,20 @@ public final class TransformOverlay implements LayeredDraw.Layer
 
         selected = line == 1;
         graphics.drawString(font, DESC_CAT_ROTATION, 3, 28, selected ? 0x66FF66 : 0xFFFFFF, false);
-        graphics.drawString(font, Utils.printVector(xform.rotation, selected, element), 3, 38, 0xFFFFFF, false);
+        graphics.drawString(font, Utils.printVector(xform.rotation(), selected, element), 3, 38, 0xFFFFFF, false);
 
         selected = line == 2;
         graphics.drawString(font, DESC_CAT_TRANSLATION, 3, 53, selected ? 0x66FF66 : 0xFFFFFF, false);
         // Translation is a special snowflake and gets divided by 16, see ItemTransform.Deserializer
-        graphics.drawString(font, Utils.printVector(xform.translation, selected, element, 16F), 3, 63, 0xFFFFFF, false);
+        graphics.drawString(font, Utils.printVector(xform.translation(), selected, element, 16F), 3, 63, 0xFFFFFF, false);
 
         selected = line == 3;
         graphics.drawString(font, DESC_CAT_SCALE, 3, 78, selected ? 0x66FF66 : 0xFFFFFF, false);
-        graphics.drawString(font, Utils.printVector(xform.scale, selected, element), 3, 88, 0xFFFFFF, false);
+        graphics.drawString(font, Utils.printVector(xform.scale(), selected, element), 3, 88, 0xFFFFFF, false);
 
         selected = line == 4;
         graphics.drawString(font, DESC_CAT_POST_ROTATION, 3, 103, selected ? 0x66FF66 : 0xFFFFFF, false);
-        graphics.drawString(font, Utils.printVector(xform.rightRotation, selected, element), 3, 113, 0xFFFFFF, false);
+        graphics.drawString(font, Utils.printVector(xform.rightRotation(), selected, element), 3, 113, 0xFFFFFF, false);
 
         for (int i = 0; i < usageLines.length; i++)
         {
@@ -147,25 +145,19 @@ public final class TransformOverlay implements LayeredDraw.Layer
         return enabled;
     }
 
-    public static ItemTransform getScratchTransform()
+    private static ItemTransform getScratchTransform()
     {
         return SCRATCH_TRANSFORMS[currContext.ordinal() - 1];
     }
 
-    public static boolean matchesCurrentContext(ItemDisplayContext context)
-    {
-        return enabled && active && context == currContext;
-    }
-
-    public static void activateTransformer(Item item)
+    public static ItemTransform getActiveTransform(Item item, ItemDisplayContext context, ItemTransform originalXform)
     {
         // noinspection ConstantConditions
-        active = enabled && item == Minecraft.getInstance().player.getMainHandItem().getItem();
-    }
-
-    public static void deactivateTransformer()
-    {
-        active = false;
+        if (enabled && context == currContext && item == Minecraft.getInstance().player.getMainHandItem().getItem())
+        {
+            return getScratchTransform();
+        }
+        return originalXform;
     }
 
     private static Component[] makeUsageLines()
@@ -274,11 +266,11 @@ public final class TransformOverlay implements LayeredDraw.Layer
             switch (line)
             {
                 case 0 -> cycleContext(-1);
-                case 1 -> modifyVector(xform.rotation, -1F, true, 360F);
+                case 1 -> modifyVector(xform.rotation(), -1F, true, 360F);
                 // Translation is a special snowflake and gets divided by 16, see ItemTransform.Deserializer
-                case 2 -> modifyVector(xform.translation, -.0625F, false, ItemTransform.Deserializer.MAX_TRANSLATION);
-                case 3 -> modifyVector(xform.scale, -1F, false, ItemTransform.Deserializer.MAX_SCALE);
-                case 4 -> modifyVector(xform.rightRotation, -1F, true, 360F);
+                case 2 -> modifyVector(xform.translation(), -.0625F, false, ItemTransform.Deserializer.MAX_TRANSLATION);
+                case 3 -> modifyVector(xform.scale(), -1F, false, ItemTransform.Deserializer.MAX_SCALE);
+                case 4 -> modifyVector(xform.rightRotation(), -1F, true, 360F);
             }
         }
         else if (wasClicked(IMTClient.KEY_INCREMENT))
@@ -287,20 +279,20 @@ public final class TransformOverlay implements LayeredDraw.Layer
             switch (line)
             {
                 case 0 -> cycleContext(1);
-                case 1 -> modifyVector(xform.rotation, 1F, true, 360F);
+                case 1 -> modifyVector(xform.rotation(), 1F, true, 360F);
                 // Translation is a special snowflake and gets divided by 16, see ItemTransform.Deserializer
-                case 2 -> modifyVector(xform.translation, .0625F, false, ItemTransform.Deserializer.MAX_TRANSLATION);
-                case 3 -> modifyVector(xform.scale, 1F, false, ItemTransform.Deserializer.MAX_SCALE);
-                case 4 -> modifyVector(xform.rightRotation, 1F, true, 360F);
+                case 2 -> modifyVector(xform.translation(), .0625F, false, ItemTransform.Deserializer.MAX_TRANSLATION);
+                case 3 -> modifyVector(xform.scale(), 1F, false, ItemTransform.Deserializer.MAX_SCALE);
+                case 4 -> modifyVector(xform.rightRotation(), 1F, true, 360F);
             }
         }
         else if (wasClicked(IMTClient.KEY_CLEAR))
         {
             ItemTransform xform = getScratchTransform();
-            xform.rotation.set(ItemTransform.Deserializer.DEFAULT_ROTATION);
-            xform.translation.set(ItemTransform.Deserializer.DEFAULT_TRANSLATION);
-            xform.scale.set(ItemTransform.Deserializer.DEFAULT_SCALE);
-            xform.rightRotation.set(ItemTransform.Deserializer.DEFAULT_ROTATION);
+            setVector(xform.rotation(), ItemTransform.Deserializer.DEFAULT_ROTATION);
+            setVector(xform.translation(), ItemTransform.Deserializer.DEFAULT_TRANSLATION);
+            setVector(xform.scale(), ItemTransform.Deserializer.DEFAULT_SCALE);
+            setVector(xform.rightRotation(), ItemTransform.Deserializer.DEFAULT_ROTATION);
 
             //noinspection ConstantConditions
             Minecraft.getInstance().player.displayClientMessage(MSG_CLEARED, true);
@@ -313,16 +305,16 @@ public final class TransformOverlay implements LayeredDraw.Layer
             if (!stack.isEmpty())
             {
                 ItemModelResolver resolver = Minecraft.getInstance().getItemModelResolver();
-                resolver.updateForTopItem(SCRATCH_RENDER_STATE, stack, currContext, false, player.level(), player, 0);
+                resolver.updateForTopItem(SCRATCH_RENDER_STATE, stack, currContext, player.level(), player, 0);
 
-                ItemTransform srcXform = SCRATCH_RENDER_STATE.transform();
+                ItemTransform srcXform = ((AccessorItemStackRenderStateLayer) SCRATCH_RENDER_STATE.firstLayer()).imt$getTransform();
                 if (srcXform != ItemTransform.NO_TRANSFORM)
                 {
                     ItemTransform xform = getScratchTransform();
-                    xform.rotation.set(srcXform.rotation);
-                    xform.translation.set(srcXform.translation);
-                    xform.scale.set(srcXform.scale);
-                    xform.rightRotation.set(srcXform.rightRotation);
+                    setVector(xform.rotation(), srcXform.rotation());
+                    setVector(xform.translation(), srcXform.translation());
+                    setVector(xform.scale(), srcXform.scale());
+                    setVector(xform.rightRotation(), srcXform.rightRotation());
                     player.displayClientMessage(MSG_LOADED, true);
                 }
 
@@ -356,7 +348,7 @@ public final class TransformOverlay implements LayeredDraw.Layer
         currContext = CONTEXTS[newIdx + 1];
     }
 
-    private static void modifyVector(Vector3f vec, float dir, boolean wrap, float range)
+    private static void modifyVector(Vector3fc vec, float dir, boolean wrap, float range)
     {
         if (ctrl && shift)
         {
@@ -384,7 +376,12 @@ public final class TransformOverlay implements LayeredDraw.Layer
         {
             component = Mth.clamp(component, -range, range);
         }
-        vec.setComponent(element, component);
+        ((Vector3f) vec).setComponent(element, component);
+    }
+
+    private static void setVector(Vector3fc target, Vector3fc source)
+    {
+        ((Vector3f) target).set(source);
     }
 
     private static boolean wasClicked(Lazy<KeyMapping> keybind)

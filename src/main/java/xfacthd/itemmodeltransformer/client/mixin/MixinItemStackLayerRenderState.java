@@ -1,40 +1,37 @@
 package xfacthd.itemmodeltransformer.client.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xfacthd.itemmodeltransformer.client.screen.TransformOverlay;
 import xfacthd.itemmodeltransformer.client.util.ItemAwareItemStackRenderState;
 
 @Mixin(ItemStackRenderState.LayerRenderState.class)
-@SuppressWarnings("MethodMayBeStatic")
 public final class MixinItemStackLayerRenderState
 {
     @Shadow
     @Final
     private ItemStackRenderState this$0;
 
-    @Inject(method = "render", at = @At("HEAD"))
-    private void itemmodeltransformer$preApplyTransform(PoseStack poseStack, MultiBufferSource buffers, int light, int overlay, CallbackInfo ci)
-    {
-        TransformOverlay.activateTransformer(((ItemAwareItemStackRenderState) this$0).imt$getItem());
-    }
-
-    @Inject(
+    @WrapOperation(
             method = "render",
             at = @At(
                     value = "INVOKE",
-                    target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V"
+                    target = "Lnet/minecraft/client/renderer/block/model/ItemTransform;apply(ZLcom/mojang/blaze3d/vertex/PoseStack$Pose;)V"
             )
     )
-    private void itemmodeltransformer$postApplyTransform(PoseStack poseStack, MultiBufferSource buffers, int light, int overlay, CallbackInfo ci)
+    private void itemmodeltransformer$injectModifiedItemTransform(ItemTransform originalXforms, boolean leftHand, PoseStack.Pose pose, Operation<Void> operation)
     {
-        TransformOverlay.deactivateTransformer();
+        Item item = ((ItemAwareItemStackRenderState) this$0).imt$getItem();
+        ItemDisplayContext ctx = ((ItemAwareItemStackRenderState) this$0).imt$getDisplayContext();
+        operation.call(TransformOverlay.getActiveTransform(item, ctx, originalXforms), leftHand, pose);
     }
 }

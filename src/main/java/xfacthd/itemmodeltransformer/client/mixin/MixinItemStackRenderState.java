@@ -2,13 +2,18 @@ package xfacthd.itemmodeltransformer.client.mixin;
 
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.Items;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import xfacthd.itemmodeltransformer.client.util.ItemAwareItemStackRenderState;
 
 @Mixin(ItemStackRenderState.class)
 public final class MixinItemStackRenderState implements ItemAwareItemStackRenderState
 {
+    @Shadow
+    ItemDisplayContext displayContext;
+
     private Item imt$item = Items.AIR;
 
     @Override
@@ -21,5 +26,11 @@ public final class MixinItemStackRenderState implements ItemAwareItemStackRender
     public Item imt$getItem()
     {
         return imt$item;
+    }
+
+    @Override
+    public ItemDisplayContext imt$getDisplayContext()
+    {
+        return displayContext;
     }
 }

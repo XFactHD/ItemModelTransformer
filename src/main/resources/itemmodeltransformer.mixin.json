@@ -3,11 +3,11 @@
     "package": "xfacthd.itemmodeltransformer.client.mixin",
     "compatibilityLevel": "JAVA_17",
     "client": [
+        "AccessorItemStackRenderStateLayer",
         "AccessorKeyMapping",
         "MixinItemModelResolver",
         "MixinItemStackRenderState",
-        "MixinItemStackLayerRenderState",
-        "MixinItemTransforms"
+        "MixinItemStackLayerRenderState"
     ],
     "injectors": {
         "defaultRequire": 1
