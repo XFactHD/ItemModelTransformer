@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xfacthd.itemmodeltransformer.client.screen.TransformOverlay;
 import xfacthd.itemmodeltransformer.client.util.ItemAwareItemStackRenderState;
 
 @Mixin(ItemModelResolver.class)
@@ -29,5 +30,12 @@ public final class MixinItemModelResolver
     )
     {
         ((ItemAwareItemStackRenderState) renderState).imt$setItem(stack.getItem());
+
+        // TODO: this also needs to evaluate to true exactly once after the context was switched off of GUI or the tool was disabled
+        if (ctx == ItemDisplayContext.GUI && TransformOverlay.isItemAffected(stack.getItem(), ctx))
+        {
+            // Force item being edited to re-render in the UI every frame
+            renderState.setAnimated();
+        }
     }
 }

@@ -24,6 +24,8 @@ neoForge {
     runs {
         configureEach {
             //systemProperty 'forge.logging.markers', 'REGISTRIES'
+            systemProperty 'terminal.ansi', 'true'
+
             logLevel = org.slf4j.event.Level.DEBUG
         }
 

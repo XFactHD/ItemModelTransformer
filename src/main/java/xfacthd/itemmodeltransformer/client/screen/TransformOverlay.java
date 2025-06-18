@@ -7,7 +7,6 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.item.ItemModelResolver;
@@ -18,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.client.gui.GuiLayer;
 import net.neoforged.neoforge.common.util.Lazy;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -28,7 +28,7 @@ import xfacthd.itemmodeltransformer.client.util.Utils;
 
 import java.util.Arrays;
 
-public final class TransformOverlay implements LayeredDraw.Layer
+public final class TransformOverlay implements GuiLayer
 {
     private static final ItemDisplayContext[] CONTEXTS = ItemDisplayContext.values();
     private static final ItemStackRenderState SCRATCH_RENDER_STATE = new ItemStackRenderState();
@@ -104,34 +104,34 @@ public final class TransformOverlay implements LayeredDraw.Layer
 
         int width = calculateWidth(font, usageLines) - TOOLTIP_DIFF;
         int height = (showUsage ? HEIGHT_USAGE : HEIGHT_BASE) - TOOLTIP_DIFF;
-        TooltipRenderUtil.renderTooltipBackground(graphics, 4, 4, width, height, 0, null);
+        TooltipRenderUtil.renderTooltipBackground(graphics, 4, 4, width, height, null);
 
         ItemTransform xform = getScratchTransform();
 
         boolean selected = line == 0;
-        graphics.drawString(font, DESC_CAT_TYPE, 3, 3, selected ? 0x66FF66 : 0xFFFFFF, false);
-        graphics.drawString(font, currContext.getSerializedName(), 3, 13, 0xFFFFFF, false);
+        graphics.drawString(font, DESC_CAT_TYPE, 3, 3, selected ? 0xFF66FF66 : 0xFFFFFFFF, false);
+        graphics.drawString(font, currContext.getSerializedName(), 3, 13, 0xFFFFFFFF, false);
 
         selected = line == 1;
-        graphics.drawString(font, DESC_CAT_ROTATION, 3, 28, selected ? 0x66FF66 : 0xFFFFFF, false);
-        graphics.drawString(font, Utils.printVector(xform.rotation(), selected, element), 3, 38, 0xFFFFFF, false);
+        graphics.drawString(font, DESC_CAT_ROTATION, 3, 28, selected ? 0xFF66FF66 : 0xFFFFFFFF, false);
+        graphics.drawString(font, Utils.printVector(xform.rotation(), selected, element), 3, 38, 0xFFFFFFFF, false);
 
         selected = line == 2;
-        graphics.drawString(font, DESC_CAT_TRANSLATION, 3, 53, selected ? 0x66FF66 : 0xFFFFFF, false);
+        graphics.drawString(font, DESC_CAT_TRANSLATION, 3, 53, selected ? 0xFF66FF66 : 0xFFFFFFFF, false);
         // Translation is a special snowflake and gets divided by 16, see ItemTransform.Deserializer
-        graphics.drawString(font, Utils.printVector(xform.translation(), selected, element, 16F), 3, 63, 0xFFFFFF, false);
+        graphics.drawString(font, Utils.printVector(xform.translation(), selected, element, 16F), 3, 63, 0xFFFFFFFF, false);
 
         selected = line == 3;
-        graphics.drawString(font, DESC_CAT_SCALE, 3, 78, selected ? 0x66FF66 : 0xFFFFFF, false);
-        graphics.drawString(font, Utils.printVector(xform.scale(), selected, element), 3, 88, 0xFFFFFF, false);
+        graphics.drawString(font, DESC_CAT_SCALE, 3, 78, selected ? 0xFF66FF66 : 0xFFFFFFFF, false);
+        graphics.drawString(font, Utils.printVector(xform.scale(), selected, element), 3, 88, 0xFFFFFFFF, false);
 
         selected = line == 4;
-        graphics.drawString(font, DESC_CAT_POST_ROTATION, 3, 103, selected ? 0x66FF66 : 0xFFFFFF, false);
-        graphics.drawString(font, Utils.printVector(xform.rightRotation(), selected, element), 3, 113, 0xFFFFFF, false);
+        graphics.drawString(font, DESC_CAT_POST_ROTATION, 3, 103, selected ? 0xFF66FF66 : 0xFFFFFFFF, false);
+        graphics.drawString(font, Utils.printVector(xform.rightRotation(), selected, element), 3, 113, 0xFFFFFFFF, false);
 
         for (int i = 0; i < usageLines.length; i++)
         {
-            graphics.drawString(font, usageLines[i], 3, 128 + (LINE_HEIGHT * i), 0xFFFFFF, false);
+            graphics.drawString(font, usageLines[i], 3, 128 + (LINE_HEIGHT * i), 0xFFFFFFFF, false);
         }
     }
 
@@ -150,14 +150,15 @@ public final class TransformOverlay implements LayeredDraw.Layer
         return SCRATCH_TRANSFORMS[currContext.ordinal() - 1];
     }
 
-    public static ItemTransform getActiveTransform(Item item, ItemDisplayContext context, ItemTransform originalXform)
+    public static boolean isItemAffected(Item item, ItemDisplayContext context)
     {
         // noinspection ConstantConditions
-        if (enabled && context == currContext && item == Minecraft.getInstance().player.getMainHandItem().getItem())
-        {
-            return getScratchTransform();
-        }
-        return originalXform;
+        return enabled && context == currContext && item == Minecraft.getInstance().player.getMainHandItem().getItem();
+    }
+
+    public static ItemTransform getActiveTransform(Item item, ItemDisplayContext context, ItemTransform originalXform)
+    {
+        return isItemAffected(item, context) ? getScratchTransform() : originalXform;
     }
 
     private static Component[] makeUsageLines()
