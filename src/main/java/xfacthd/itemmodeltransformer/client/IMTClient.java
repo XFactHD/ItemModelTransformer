@@ -15,8 +15,10 @@ import xfacthd.itemmodeltransformer.client.util.TransformerKeyConflictContext;
 import xfacthd.itemmodeltransformer.client.util.Utils;
 
 @Mod(value = ItemModelTransformer.MOD_ID, dist = Dist.CLIENT)
+@SuppressWarnings("UtilityClassWithPublicConstructor")
 public final class IMTClient
 {
+    private static final KeyMapping.Category CATEGORY = new KeyMapping.Category(Utils.rl("main"));
     private static final Lazy<KeyMapping> KEY_TOGGLE_TRANSFORMER = makeKeybind("toggle", GLFW.GLFW_KEY_I, false, false);
     public static final Lazy<KeyMapping> KEY_PREV_CATEGORY = makeKeybind("prev_category", GLFW.GLFW_KEY_UP, true, false);
     public static final Lazy<KeyMapping> KEY_NEXT_CATEGORY = makeKeybind("next_category", GLFW.GLFW_KEY_DOWN, true, false);
@@ -40,6 +42,8 @@ public final class IMTClient
 
     private static void onRegisterKeyMappings(final RegisterKeyMappingsEvent event)
     {
+        event.registerCategory(CATEGORY);
+
         event.register(KEY_TOGGLE_TRANSFORMER.get());
         event.register(KEY_PREV_CATEGORY.get());
         event.register(KEY_NEXT_CATEGORY.get());
@@ -75,11 +79,7 @@ public final class IMTClient
     {
         return Lazy.of(() ->
         {
-            KeyMapping keybind = new KeyMapping(
-                    "key." + ItemModelTransformer.MOD_ID +"." + name,
-                    key,
-                    "key.categories." + ItemModelTransformer.MOD_ID
-            );
+            KeyMapping keybind = new KeyMapping("key." + ItemModelTransformer.MOD_ID +"." + name, key, CATEGORY);
             if (useConflictCtx)
             {
                 if (incDec)

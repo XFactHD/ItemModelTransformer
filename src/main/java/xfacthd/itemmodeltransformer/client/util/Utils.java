@@ -13,6 +13,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
@@ -45,7 +46,7 @@ public final class Utils
             VECTOR3FC_CODEC.fieldOf("scale").forGetter(ItemTransform::scale),
             VECTOR3FC_CODEC.fieldOf("right_rotation").forGetter(ItemTransform::rightRotation)
     ).apply(inst, ItemTransform::new));
-    private static final Style FULL_SPACE_FONT = Style.EMPTY.withFont(Utils.rl("full_space"));
+    private static final Style FULL_SPACE_FONT = Style.EMPTY.withFont(new FontDescription.Resource(Utils.rl("full_space")));
     private static final Style STYLE_DEFAULT = Style.EMPTY.applyFormat(ChatFormatting.WHITE);
     private static final Style STYLE_SELECTED = Style.EMPTY.withColor(0xFF6666);
     private static final String CODE_INDENT = " ".repeat(4);

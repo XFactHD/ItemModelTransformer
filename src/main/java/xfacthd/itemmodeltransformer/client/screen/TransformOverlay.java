@@ -1,6 +1,7 @@
 package xfacthd.itemmodeltransformer.client.screen;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.platform.Window;
 import net.minecraft.Util;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
@@ -8,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
+import net.minecraft.client.input.InputQuirks;
 import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -41,8 +43,8 @@ public final class TransformOverlay implements GuiLayer
     private static final int TOOLTIP_DIFF = 4;
     private static final int KEY_LEFT_SHIFT = GLFW.GLFW_KEY_LEFT_SHIFT;
     private static final int KEY_RIGHT_SHIFT = GLFW.GLFW_KEY_RIGHT_SHIFT;
-    private static final int KEY_LEFT_CTRL = Minecraft.ON_OSX ? GLFW.GLFW_KEY_LEFT_SUPER : GLFW.GLFW_KEY_LEFT_CONTROL;
-    private static final int KEY_RIGHT_CTRL = Minecraft.ON_OSX ? GLFW.GLFW_KEY_RIGHT_SUPER : GLFW.GLFW_KEY_RIGHT_CONTROL;
+    private static final int KEY_LEFT_CTRL = InputQuirks.EDIT_SHORTCUT_KEY_LEFT;
+    private static final int KEY_RIGHT_CTRL = InputQuirks.EDIT_SHORTCUT_KEY_RIGHT;
     private static final int KEY_LEFT_ALT = GLFW.GLFW_KEY_LEFT_ALT;
     private static final int KEY_RIGHT_ALT = GLFW.GLFW_KEY_RIGHT_ALT;
     private static final Component DUMMY_VECTOR_PRINT = Utils.printVector(new Vector3f(), false, 0);
@@ -69,11 +71,11 @@ public final class TransformOverlay implements GuiLayer
     );
     private static final Component DESC_INC_DEC_X0_01 = Component.translatable(
             "desc.itemmodeltransformer.usage.inc_dec.x0_01",
-            Utils.formatKeyCombination(Minecraft.ON_OSX ? DESC_KEY_CMD : DESC_KEY_CTRL)
+            Utils.formatKeyCombination(InputQuirks.ON_OSX ? DESC_KEY_CMD : DESC_KEY_CTRL)
     );
     private static final Component DESC_INC_DEC_X0_001 = Component.translatable(
             "desc.itemmodeltransformer.usage.inc_dec.x0_001",
-            Utils.formatKeyCombination(DESC_KEY_SHIFT, Minecraft.ON_OSX ? DESC_KEY_CMD : DESC_KEY_CTRL)
+            Utils.formatKeyCombination(DESC_KEY_SHIFT, InputQuirks.ON_OSX ? DESC_KEY_CMD : DESC_KEY_CTRL)
     );
 
     private static final ItemTransform[] SCRATCH_TRANSFORMS = Util.make(
@@ -240,7 +242,7 @@ public final class TransformOverlay implements GuiLayer
             return;
         }
 
-        long window = Minecraft.getInstance().getWindow().getWindow();
+        Window window = Minecraft.getInstance().getWindow();
         shift = InputConstants.isKeyDown(window, KEY_LEFT_SHIFT) || InputConstants.isKeyDown(window, KEY_RIGHT_SHIFT);
         ctrl = InputConstants.isKeyDown(window, KEY_LEFT_CTRL) || InputConstants.isKeyDown(window, KEY_RIGHT_CTRL);
         alt = InputConstants.isKeyDown(window, KEY_LEFT_ALT) || InputConstants.isKeyDown(window, KEY_RIGHT_ALT);

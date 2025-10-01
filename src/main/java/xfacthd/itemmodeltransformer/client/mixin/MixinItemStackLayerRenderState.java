@@ -22,7 +22,7 @@ public final class MixinItemStackLayerRenderState
     private ItemStackRenderState this$0;
 
     @WrapOperation(
-            method = "render",
+            method = "submit",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/renderer/block/model/ItemTransform;apply(ZLcom/mojang/blaze3d/vertex/PoseStack$Pose;)V"

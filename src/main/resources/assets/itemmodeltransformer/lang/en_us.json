@@ -1,5 +1,5 @@
 {
-    "key.categories.itemmodeltransformer": "ItemModelTransformer",
+    "key.category.itemmodeltransformer.main": "ItemModelTransformer",
     "key.itemmodeltransformer.toggle": "Toggle overlay",
     "key.itemmodeltransformer.prev_category": "Previous category",
     "key.itemmodeltransformer.next_category": "Next category",
