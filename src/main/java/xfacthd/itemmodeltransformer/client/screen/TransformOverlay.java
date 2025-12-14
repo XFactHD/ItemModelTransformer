@@ -2,19 +2,18 @@ package xfacthd.itemmodeltransformer.client.screen;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
-import net.minecraft.Util;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
-import net.minecraft.client.input.InputQuirks;
 import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -43,8 +42,8 @@ public final class TransformOverlay implements GuiLayer
     private static final int TOOLTIP_DIFF = 4;
     private static final int KEY_LEFT_SHIFT = GLFW.GLFW_KEY_LEFT_SHIFT;
     private static final int KEY_RIGHT_SHIFT = GLFW.GLFW_KEY_RIGHT_SHIFT;
-    private static final int KEY_LEFT_CTRL = InputQuirks.EDIT_SHORTCUT_KEY_LEFT;
-    private static final int KEY_RIGHT_CTRL = InputQuirks.EDIT_SHORTCUT_KEY_RIGHT;
+    private static final int KEY_LEFT_CTRL = GLFW.GLFW_KEY_LEFT_CONTROL;
+    private static final int KEY_RIGHT_CTRL = GLFW.GLFW_KEY_RIGHT_CONTROL;
     private static final int KEY_LEFT_ALT = GLFW.GLFW_KEY_LEFT_ALT;
     private static final int KEY_RIGHT_ALT = GLFW.GLFW_KEY_RIGHT_ALT;
     private static final Component DUMMY_VECTOR_PRINT = Utils.printVector(new Vector3f(), false, 0);
@@ -58,7 +57,6 @@ public final class TransformOverlay implements GuiLayer
     private static final Component MSG_COPIED_JSON = Component.translatable("msg.itemmodeltransformer.copied_json_to_clipboard");
     private static final Component MSG_COPIED_CODE = Component.translatable("msg.itemmodeltransformer.copied_code_to_clipboard");
     private static final Component DESC_KEY_CTRL = Component.translatable("desc.itemmodeltransformer.key.ctrl");
-    private static final Component DESC_KEY_CMD = Component.translatable("desc.itemmodeltransformer.key.cmd");
     private static final Component DESC_KEY_SHIFT = Component.translatable("desc.itemmodeltransformer.key.shift");
     private static final Component DESC_KEY_ALT = Component.translatable("desc.itemmodeltransformer.key.alt");
     private static final Component DESC_INC_DEC_X10_0 = Component.translatable(
@@ -71,11 +69,11 @@ public final class TransformOverlay implements GuiLayer
     );
     private static final Component DESC_INC_DEC_X0_01 = Component.translatable(
             "desc.itemmodeltransformer.usage.inc_dec.x0_01",
-            Utils.formatKeyCombination(InputQuirks.ON_OSX ? DESC_KEY_CMD : DESC_KEY_CTRL)
+            Utils.formatKeyCombination(DESC_KEY_CTRL)
     );
     private static final Component DESC_INC_DEC_X0_001 = Component.translatable(
             "desc.itemmodeltransformer.usage.inc_dec.x0_001",
-            Utils.formatKeyCombination(DESC_KEY_SHIFT, InputQuirks.ON_OSX ? DESC_KEY_CMD : DESC_KEY_CTRL)
+            Utils.formatKeyCombination(DESC_KEY_SHIFT, DESC_KEY_CTRL)
     );
 
     private static final ItemTransform[] SCRATCH_TRANSFORMS = Util.make(

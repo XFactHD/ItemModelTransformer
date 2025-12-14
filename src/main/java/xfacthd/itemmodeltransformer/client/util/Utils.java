@@ -16,7 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.neoforged.neoforge.client.settings.KeyMappingLookup;
 import net.neoforged.neoforge.common.util.Lazy;
@@ -189,12 +189,10 @@ public final class Utils
         return result.append(Component.literal("]")).setStyle(Style.EMPTY.applyFormat(ChatFormatting.GOLD));
     }
 
-    public static ResourceLocation rl(String path)
+    public static Identifier rl(String path)
     {
-        return ResourceLocation.fromNamespaceAndPath(ItemModelTransformer.MOD_ID, path);
+        return Identifier.fromNamespaceAndPath(ItemModelTransformer.MOD_ID, path);
     }
-
-
 
     private Utils() { }
 }
