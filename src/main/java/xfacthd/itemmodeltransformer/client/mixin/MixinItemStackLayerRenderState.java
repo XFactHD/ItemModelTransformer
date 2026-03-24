@@ -3,8 +3,8 @@ package xfacthd.itemmodeltransformer.client.mixin;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.resources.model.cuboid.ItemTransform;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import org.spongepowered.asm.mixin.Final;
@@ -22,10 +22,10 @@ public final class MixinItemStackLayerRenderState
     private ItemStackRenderState this$0;
 
     @WrapOperation(
-            method = "submit",
+            method = "applyTransform",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/block/model/ItemTransform;apply(ZLcom/mojang/blaze3d/vertex/PoseStack$Pose;)V"
+                    target = "Lnet/minecraft/client/resources/model/cuboid/ItemTransform;apply(ZLcom/mojang/blaze3d/vertex/PoseStack$Pose;)V"
             )
     )
     private void itemmodeltransformer$injectModifiedItemTransform(ItemTransform originalXforms, boolean leftHand, PoseStack.Pose pose, Operation<Void> operation)

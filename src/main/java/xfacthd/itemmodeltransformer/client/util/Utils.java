@@ -11,7 +11,7 @@ import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.renderer.block.model.ItemTransform;
+import net.minecraft.client.resources.model.cuboid.ItemTransform;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.MutableComponent;

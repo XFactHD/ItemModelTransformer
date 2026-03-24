@@ -6,11 +6,11 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
-import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.resources.model.cuboid.ItemTransform;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
@@ -78,7 +78,7 @@ public final class TransformOverlay implements GuiLayer
 
     private static final ItemTransform[] SCRATCH_TRANSFORMS = Util.make(
             new ItemTransform[CONTEXTS.length - 1],
-            arr -> Arrays.setAll(arr, i -> new ItemTransform(
+            arr -> Arrays.setAll(arr, _ -> new ItemTransform(
                     new Vector3f(ItemTransform.Deserializer.DEFAULT_ROTATION),
                     new Vector3f(ItemTransform.Deserializer.DEFAULT_TRANSLATION),
                     new Vector3f(ItemTransform.Deserializer.DEFAULT_SCALE),
@@ -95,7 +95,7 @@ public final class TransformOverlay implements GuiLayer
     private static boolean alt = false;
 
     @Override
-    public void render(GuiGraphics graphics, DeltaTracker deltaTracker)
+    public void render(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker)
     {
         if (!enabled) return;
 
@@ -104,34 +104,34 @@ public final class TransformOverlay implements GuiLayer
 
         int width = calculateWidth(font, usageLines) - TOOLTIP_DIFF;
         int height = (showUsage ? HEIGHT_USAGE : HEIGHT_BASE) - TOOLTIP_DIFF;
-        TooltipRenderUtil.renderTooltipBackground(graphics, 4, 4, width, height, null);
+        TooltipRenderUtil.extractTooltipBackground(graphics, 4, 4, width, height, null);
 
         ItemTransform xform = getScratchTransform();
 
         boolean selected = line == 0;
-        graphics.drawString(font, DESC_CAT_TYPE, 3, 3, selected ? 0xFF66FF66 : 0xFFFFFFFF, false);
-        graphics.drawString(font, currContext.getSerializedName(), 3, 13, 0xFFFFFFFF, false);
+        graphics.text(font, DESC_CAT_TYPE, 3, 3, selected ? 0xFF66FF66 : 0xFFFFFFFF, false);
+        graphics.text(font, currContext.getSerializedName(), 3, 13, 0xFFFFFFFF, false);
 
         selected = line == 1;
-        graphics.drawString(font, DESC_CAT_ROTATION, 3, 28, selected ? 0xFF66FF66 : 0xFFFFFFFF, false);
-        graphics.drawString(font, Utils.printVector(xform.rotation(), selected, element), 3, 38, 0xFFFFFFFF, false);
+        graphics.text(font, DESC_CAT_ROTATION, 3, 28, selected ? 0xFF66FF66 : 0xFFFFFFFF, false);
+        graphics.text(font, Utils.printVector(xform.rotation(), selected, element), 3, 38, 0xFFFFFFFF, false);
 
         selected = line == 2;
-        graphics.drawString(font, DESC_CAT_TRANSLATION, 3, 53, selected ? 0xFF66FF66 : 0xFFFFFFFF, false);
+        graphics.text(font, DESC_CAT_TRANSLATION, 3, 53, selected ? 0xFF66FF66 : 0xFFFFFFFF, false);
         // Translation is a special snowflake and gets divided by 16, see ItemTransform.Deserializer
-        graphics.drawString(font, Utils.printVector(xform.translation(), selected, element, 16F), 3, 63, 0xFFFFFFFF, false);
+        graphics.text(font, Utils.printVector(xform.translation(), selected, element, 16F), 3, 63, 0xFFFFFFFF, false);
 
         selected = line == 3;
-        graphics.drawString(font, DESC_CAT_SCALE, 3, 78, selected ? 0xFF66FF66 : 0xFFFFFFFF, false);
-        graphics.drawString(font, Utils.printVector(xform.scale(), selected, element), 3, 88, 0xFFFFFFFF, false);
+        graphics.text(font, DESC_CAT_SCALE, 3, 78, selected ? 0xFF66FF66 : 0xFFFFFFFF, false);
+        graphics.text(font, Utils.printVector(xform.scale(), selected, element), 3, 88, 0xFFFFFFFF, false);
 
         selected = line == 4;
-        graphics.drawString(font, DESC_CAT_POST_ROTATION, 3, 103, selected ? 0xFF66FF66 : 0xFFFFFFFF, false);
-        graphics.drawString(font, Utils.printVector(xform.rightRotation(), selected, element), 3, 113, 0xFFFFFFFF, false);
+        graphics.text(font, DESC_CAT_POST_ROTATION, 3, 103, selected ? 0xFF66FF66 : 0xFFFFFFFF, false);
+        graphics.text(font, Utils.printVector(xform.rightRotation(), selected, element), 3, 113, 0xFFFFFFFF, false);
 
         for (int i = 0; i < usageLines.length; i++)
         {
-            graphics.drawString(font, usageLines[i], 3, 128 + (LINE_HEIGHT * i), 0xFFFFFFFF, false);
+            graphics.text(font, usageLines[i], 3, 128 + (LINE_HEIGHT * i), 0xFFFFFFFF, false);
         }
     }
 
@@ -296,7 +296,7 @@ public final class TransformOverlay implements GuiLayer
             setVector(xform.rightRotation(), ItemTransform.Deserializer.DEFAULT_ROTATION);
 
             //noinspection ConstantConditions
-            Minecraft.getInstance().player.displayClientMessage(MSG_CLEARED, true);
+            Minecraft.getInstance().player.sendOverlayMessage(MSG_CLEARED);
         }
         else if (wasClicked(IMTClient.KEY_LOAD))
         {
@@ -308,7 +308,7 @@ public final class TransformOverlay implements GuiLayer
                 ItemModelResolver resolver = Minecraft.getInstance().getItemModelResolver();
                 resolver.updateForTopItem(SCRATCH_RENDER_STATE, stack, currContext, player.level(), player, 0);
 
-                ItemTransform srcXform = ((AccessorItemStackRenderStateLayer) SCRATCH_RENDER_STATE.firstLayer()).imt$getTransform();
+                ItemTransform srcXform = ((AccessorItemStackRenderStateLayer) SCRATCH_RENDER_STATE.firstLayer()).imt$getItemTransform();
                 if (srcXform != ItemTransform.NO_TRANSFORM)
                 {
                     ItemTransform xform = getScratchTransform();
@@ -316,7 +316,7 @@ public final class TransformOverlay implements GuiLayer
                     setVector(xform.translation(), srcXform.translation());
                     setVector(xform.scale(), srcXform.scale());
                     setVector(xform.rightRotation(), srcXform.rightRotation());
-                    player.displayClientMessage(MSG_LOADED, true);
+                    player.sendOverlayMessage(MSG_LOADED);
                 }
 
                 SCRATCH_RENDER_STATE.clear();
@@ -327,19 +327,22 @@ public final class TransformOverlay implements GuiLayer
             String out = Utils.encodeItemTransform(SCRATCH_TRANSFORMS);
             Minecraft.getInstance().keyboardHandler.setClipboard(out);
             //noinspection ConstantConditions
-            Minecraft.getInstance().player.displayClientMessage(MSG_COPIED_JSON, true);
+            Minecraft.getInstance().player.sendOverlayMessage(MSG_COPIED_JSON);
         }
         else if (wasClicked(IMTClient.KEY_PRINT_DATAGEN))
         {
             String out = Utils.printDatagenCode(SCRATCH_TRANSFORMS);
             Minecraft.getInstance().keyboardHandler.setClipboard(out);
             //noinspection ConstantConditions
-            Minecraft.getInstance().player.displayClientMessage(MSG_COPIED_CODE, true);
+            Minecraft.getInstance().player.sendOverlayMessage(MSG_COPIED_CODE);
         }
         else if (wasClicked(IMTClient.KEY_TOGGLE_USAGE))
         {
             showUsage = !showUsage;
         }
+
+        // Ensure keys pressed while not supported (i.e. inc/dec in type selection) don't trigger after switching line to one supporting said keys
+        releaseAllKeys();
     }
 
     private static void cycleContext(int dir)
