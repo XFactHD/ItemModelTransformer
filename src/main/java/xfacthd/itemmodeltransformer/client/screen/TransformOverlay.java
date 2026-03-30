@@ -14,6 +14,10 @@ import net.minecraft.client.resources.model.cuboid.ItemTransform;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -28,6 +32,7 @@ import xfacthd.itemmodeltransformer.client.mixin.AccessorItemStackRenderStateLay
 import xfacthd.itemmodeltransformer.client.util.Utils;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public final class TransformOverlay implements GuiLayer {
     private static final ItemDisplayContext[] CONTEXTS = ItemDisplayContext.values();
@@ -147,8 +152,25 @@ public final class TransformOverlay implements GuiLayer {
     }
 
     public static boolean isItemAffected(Item item, ItemDisplayContext context) {
-        // noinspection ConstantConditions
-        return enabled && context == currContext && item == Minecraft.getInstance().player.getMainHandItem().getItem();
+        Player player = Objects.requireNonNull(Minecraft.getInstance().player);
+        return enabled && context == currContext && switch (context) {
+            case NONE -> false;
+            case THIRD_PERSON_LEFT_HAND, FIRST_PERSON_LEFT_HAND -> getHeldItem(player, false).is(item);
+            case THIRD_PERSON_RIGHT_HAND, FIRST_PERSON_RIGHT_HAND -> getHeldItem(player, true).is(item);
+            case HEAD -> player.getItemBySlot(EquipmentSlot.HEAD).is(item);
+            case GUI -> {
+                Inventory inventory = player.getInventory();
+                yield inventory.getItem(inventory.getSelectedSlot()).is(item);
+            }
+            case GROUND, FIXED, ON_SHELF -> player.getMainHandItem().is(item);
+        };
+    }
+
+    private static ItemStack getHeldItem(Player player, boolean rightHand)
+    {
+        boolean rightMain = player.getMainArm() == HumanoidArm.RIGHT;
+        InteractionHand hand = rightMain == rightHand ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+        return player.getItemInHand(hand);
     }
 
     public static ItemTransform getActiveTransform(Item item, ItemDisplayContext context, ItemTransform originalXform) {
