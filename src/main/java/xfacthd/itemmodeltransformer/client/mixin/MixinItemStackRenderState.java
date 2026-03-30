@@ -9,28 +9,24 @@ import org.spongepowered.asm.mixin.Shadow;
 import xfacthd.itemmodeltransformer.client.util.ItemAwareItemStackRenderState;
 
 @Mixin(ItemStackRenderState.class)
-public final class MixinItemStackRenderState implements ItemAwareItemStackRenderState
-{
+public final class MixinItemStackRenderState implements ItemAwareItemStackRenderState {
     @Shadow
     ItemDisplayContext displayContext;
 
     private Item imt$item = Items.AIR;
 
     @Override
-    public void imt$setItem(Item item)
-    {
+    public void imt$setItem(Item item) {
         imt$item = item;
     }
 
     @Override
-    public Item imt$getItem()
-    {
+    public Item imt$getItem() {
         return imt$item;
     }
 
     @Override
-    public ItemDisplayContext imt$getDisplayContext()
-    {
+    public ItemDisplayContext imt$getDisplayContext() {
         return displayContext;
     }
 }

@@ -7,8 +7,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(KeyMapping.class)
-public interface AccessorKeyMapping
-{
+public interface AccessorKeyMapping {
     @Accessor("MAP")
     static KeyMappingLookup itemmodeltransformer$getKeyMap() { throw new AssertionError(); }
 

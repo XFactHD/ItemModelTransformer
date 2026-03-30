@@ -15,8 +15,7 @@ import xfacthd.itemmodeltransformer.client.util.ItemAwareItemStackRenderState;
 
 @Mixin(ItemModelResolver.class)
 @SuppressWarnings("MethodMayBeStatic")
-public final class MixinItemModelResolver
-{
+public final class MixinItemModelResolver {
     @Inject(method = "appendItemLayers", at = @At("HEAD"))
     private void itemmodeltransformer$captureItem(
             ItemStackRenderState renderState,
@@ -26,12 +25,10 @@ public final class MixinItemModelResolver
             @Nullable ItemOwner entity,
             int seed,
             CallbackInfo ci
-    )
-    {
+    ) {
         ((ItemAwareItemStackRenderState) renderState).imt$setItem(stack.getItem());
 
-        if (ctx == ItemDisplayContext.GUI)
-        {
+        if (ctx == ItemDisplayContext.GUI) {
             // Force items in UIs to re-render every frame to properly capture the potentially modified transform
             renderState.setAnimated();
         }

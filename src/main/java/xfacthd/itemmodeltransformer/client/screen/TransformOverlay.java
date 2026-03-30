@@ -29,8 +29,7 @@ import xfacthd.itemmodeltransformer.client.util.Utils;
 
 import java.util.Arrays;
 
-public final class TransformOverlay implements GuiLayer
-{
+public final class TransformOverlay implements GuiLayer {
     private static final ItemDisplayContext[] CONTEXTS = ItemDisplayContext.values();
     private static final ItemStackRenderState SCRATCH_RENDER_STATE = new ItemStackRenderState();
     private static final int LINE_COUNT = 5;
@@ -95,9 +94,10 @@ public final class TransformOverlay implements GuiLayer
     private static boolean alt = false;
 
     @Override
-    public void render(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker)
-    {
-        if (!enabled) return;
+    public void render(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker) {
+        if (!enabled) {
+            return;
+        }
 
         Component[] usageLines = makeUsageLines();
         Font font = Minecraft.getInstance().font;
@@ -129,42 +129,34 @@ public final class TransformOverlay implements GuiLayer
         graphics.text(font, DESC_CAT_POST_ROTATION, 3, 103, selected ? 0xFF66FF66 : 0xFFFFFFFF, false);
         graphics.text(font, Utils.printVector(xform.rightRotation(), selected, element), 3, 113, 0xFFFFFFFF, false);
 
-        for (int i = 0; i < usageLines.length; i++)
-        {
+        for (int i = 0; i < usageLines.length; i++) {
             graphics.text(font, usageLines[i], 3, 128 + (LINE_HEIGHT * i), 0xFFFFFFFF, false);
         }
     }
 
-    public static void toggleEnabled()
-    {
+    public static void toggleEnabled() {
         enabled = !enabled;
     }
 
-    public static boolean isEnabled()
-    {
+    public static boolean isEnabled() {
         return enabled;
     }
 
-    private static ItemTransform getScratchTransform()
-    {
+    private static ItemTransform getScratchTransform() {
         return SCRATCH_TRANSFORMS[currContext.ordinal() - 1];
     }
 
-    public static boolean isItemAffected(Item item, ItemDisplayContext context)
-    {
+    public static boolean isItemAffected(Item item, ItemDisplayContext context) {
         // noinspection ConstantConditions
         return enabled && context == currContext && item == Minecraft.getInstance().player.getMainHandItem().getItem();
     }
 
-    public static ItemTransform getActiveTransform(Item item, ItemDisplayContext context, ItemTransform originalXform)
-    {
+    public static ItemTransform getActiveTransform(Item item, ItemDisplayContext context, ItemTransform originalXform) {
         return isItemAffected(item, context) ? getScratchTransform() : originalXform;
     }
 
-    private static Component[] makeUsageLines()
-    {
-        if (!showUsage)
-        {
+    private static Component[] makeUsageLines() {
+        if (!showUsage) {
             return new Component[] {
                     Component.translatable(
                             "desc.itemmodeltransformer.usage.show",
@@ -222,20 +214,16 @@ public final class TransformOverlay implements GuiLayer
         };
     }
 
-    private static int calculateWidth(Font font, Component[] lines)
-    {
+    private static int calculateWidth(Font font, Component[] lines) {
         int width = font.width(DUMMY_VECTOR_PRINT);
-        for (Component line : lines)
-        {
+        for (Component line : lines) {
             width = Math.max(width, font.width(line));
         }
         return width + 1;
     }
 
-    public static void handleInput()
-    {
-        if (!enabled)
-        {
+    public static void handleInput() {
+        if (!enabled) {
             releaseAllKeys();
             return;
         }
@@ -245,27 +233,17 @@ public final class TransformOverlay implements GuiLayer
         ctrl = InputConstants.isKeyDown(window, KEY_LEFT_CTRL) || InputConstants.isKeyDown(window, KEY_RIGHT_CTRL);
         alt = InputConstants.isKeyDown(window, KEY_LEFT_ALT) || InputConstants.isKeyDown(window, KEY_RIGHT_ALT);
 
-        if (wasClicked(IMTClient.KEY_PREV_CATEGORY))
-        {
+        if (wasClicked(IMTClient.KEY_PREV_CATEGORY)) {
             line = Mth.positiveModulo(line - 1, LINE_COUNT);
-        }
-        else if (wasClicked(IMTClient.KEY_NEXT_CATEGORY))
-        {
+        } else if (wasClicked(IMTClient.KEY_NEXT_CATEGORY)) {
             line = Mth.positiveModulo(line + 1, LINE_COUNT);
-        }
-        else if (line > 0 && wasClicked(IMTClient.KEY_PREV_ELEMENT))
-        {
+        } else if (line > 0 && wasClicked(IMTClient.KEY_PREV_ELEMENT)) {
             element = Mth.positiveModulo(element - 1, ELEMENT_COUNT);
-        }
-        else if (line > 0 && wasClicked(IMTClient.KEY_NEXT_ELEMENT))
-        {
+        } else if (line > 0 && wasClicked(IMTClient.KEY_NEXT_ELEMENT)) {
             element = Mth.positiveModulo(element + 1, ELEMENT_COUNT);
-        }
-        else if (wasClicked(IMTClient.KEY_DECREMENT))
-        {
+        } else if (wasClicked(IMTClient.KEY_DECREMENT)) {
             ItemTransform xform = getScratchTransform();
-            switch (line)
-            {
+            switch (line) {
                 case 0 -> cycleContext(-1);
                 case 1 -> modifyVector(xform.rotation(), -1F, true, 360F);
                 // Translation is a special snowflake and gets divided by 16, see ItemTransform.Deserializer
@@ -273,12 +251,9 @@ public final class TransformOverlay implements GuiLayer
                 case 3 -> modifyVector(xform.scale(), -1F, false, ItemTransform.Deserializer.MAX_SCALE);
                 case 4 -> modifyVector(xform.rightRotation(), -1F, true, 360F);
             }
-        }
-        else if (wasClicked(IMTClient.KEY_INCREMENT))
-        {
+        } else if (wasClicked(IMTClient.KEY_INCREMENT)) {
             ItemTransform xform = getScratchTransform();
-            switch (line)
-            {
+            switch (line) {
                 case 0 -> cycleContext(1);
                 case 1 -> modifyVector(xform.rotation(), 1F, true, 360F);
                 // Translation is a special snowflake and gets divided by 16, see ItemTransform.Deserializer
@@ -286,9 +261,7 @@ public final class TransformOverlay implements GuiLayer
                 case 3 -> modifyVector(xform.scale(), 1F, false, ItemTransform.Deserializer.MAX_SCALE);
                 case 4 -> modifyVector(xform.rightRotation(), 1F, true, 360F);
             }
-        }
-        else if (wasClicked(IMTClient.KEY_CLEAR))
-        {
+        } else if (wasClicked(IMTClient.KEY_CLEAR)) {
             ItemTransform xform = getScratchTransform();
             setVector(xform.rotation(), ItemTransform.Deserializer.DEFAULT_ROTATION);
             setVector(xform.translation(), ItemTransform.Deserializer.DEFAULT_TRANSLATION);
@@ -297,20 +270,16 @@ public final class TransformOverlay implements GuiLayer
 
             //noinspection ConstantConditions
             Minecraft.getInstance().player.sendOverlayMessage(MSG_CLEARED);
-        }
-        else if (wasClicked(IMTClient.KEY_LOAD))
-        {
+        } else if (wasClicked(IMTClient.KEY_LOAD)) {
             Player player = Minecraft.getInstance().player;
             //noinspection ConstantConditions
             ItemStack stack = player.getMainHandItem();
-            if (!stack.isEmpty())
-            {
+            if (!stack.isEmpty()) {
                 ItemModelResolver resolver = Minecraft.getInstance().getItemModelResolver();
                 resolver.updateForTopItem(SCRATCH_RENDER_STATE, stack, currContext, player.level(), player, 0);
 
                 ItemTransform srcXform = ((AccessorItemStackRenderStateLayer) SCRATCH_RENDER_STATE.firstLayer()).imt$getItemTransform();
-                if (srcXform != ItemTransform.NO_TRANSFORM)
-                {
+                if (srcXform != ItemTransform.NO_TRANSFORM) {
                     ItemTransform xform = getScratchTransform();
                     setVector(xform.rotation(), srcXform.rotation());
                     setVector(xform.translation(), srcXform.translation());
@@ -321,23 +290,17 @@ public final class TransformOverlay implements GuiLayer
 
                 SCRATCH_RENDER_STATE.clear();
             }
-        }
-        else if (wasClicked(IMTClient.KEY_PRINT_JSON))
-        {
+        } else if (wasClicked(IMTClient.KEY_PRINT_JSON)) {
             String out = Utils.encodeItemTransform(SCRATCH_TRANSFORMS);
             Minecraft.getInstance().keyboardHandler.setClipboard(out);
             //noinspection ConstantConditions
             Minecraft.getInstance().player.sendOverlayMessage(MSG_COPIED_JSON);
-        }
-        else if (wasClicked(IMTClient.KEY_PRINT_DATAGEN))
-        {
+        } else if (wasClicked(IMTClient.KEY_PRINT_DATAGEN)) {
             String out = Utils.printDatagenCode(SCRATCH_TRANSFORMS);
             Minecraft.getInstance().keyboardHandler.setClipboard(out);
             //noinspection ConstantConditions
             Minecraft.getInstance().player.sendOverlayMessage(MSG_COPIED_CODE);
-        }
-        else if (wasClicked(IMTClient.KEY_TOGGLE_USAGE))
-        {
+        } else if (wasClicked(IMTClient.KEY_TOGGLE_USAGE)) {
             showUsage = !showUsage;
         }
 
@@ -345,67 +308,50 @@ public final class TransformOverlay implements GuiLayer
         releaseAllKeys();
     }
 
-    private static void cycleContext(int dir)
-    {
+    private static void cycleContext(int dir) {
         int idx = currContext.ordinal() - 1;
         int newIdx = Mth.positiveModulo(idx + dir, CONTEXTS.length - 1);
         currContext = CONTEXTS[newIdx + 1];
     }
 
-    private static void modifyVector(Vector3fc vec, float dir, boolean wrap, float range)
-    {
-        if (ctrl && shift)
-        {
+    private static void modifyVector(Vector3fc vec, float dir, boolean wrap, float range) {
+        if (ctrl && shift) {
             dir *= .001F;
-        }
-        else if (ctrl)
-        {
+        } else if (ctrl) {
             dir *= .01F;
-        }
-        else if (shift)
-        {
+        } else if (shift) {
             dir *= .1F;
-        }
-        else if (alt)
-        {
+        } else if (alt) {
             dir *= 10F;
         }
 
         float component = vec.get(element) + dir;
-        if (wrap)
-        {
+        if (wrap) {
             component = Mth.positiveModulo(component, range);
-        }
-        else
-        {
+        } else {
             component = Mth.clamp(component, -range, range);
         }
         ((Vector3f) vec).setComponent(element, component);
     }
 
-    private static void setVector(Vector3fc target, Vector3fc source)
-    {
+    private static void setVector(Vector3fc target, Vector3fc source) {
         ((Vector3f) target).set(source);
     }
 
-    private static boolean wasClicked(Lazy<KeyMapping> keybind)
-    {
+    private static boolean wasClicked(Lazy<KeyMapping> keybind) {
         KeyMapping key = keybind.get();
         boolean clicked = false;
-        while (key.consumeClick())
-        {
+        while (key.consumeClick()) {
             clicked = true;
         }
-        if (clicked)
-        {
+        if (clicked) {
             // Prevent vanilla keybinds with the same key from firing
             Utils.releaseAllKeys(key.getKey());
         }
         return clicked;
     }
 
-    private static void releaseAllKeys()
-    {
+    private static void releaseAllKeys() {
         Utils.releaseKey(IMTClient.KEY_PREV_CATEGORY.get());
         Utils.releaseKey(IMTClient.KEY_NEXT_CATEGORY.get());
         Utils.releaseKey(IMTClient.KEY_PREV_ELEMENT.get());

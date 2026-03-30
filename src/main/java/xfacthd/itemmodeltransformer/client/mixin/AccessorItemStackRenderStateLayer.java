@@ -6,8 +6,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(ItemStackRenderState.LayerRenderState.class)
-public interface AccessorItemStackRenderStateLayer
-{
+public interface AccessorItemStackRenderStateLayer {
     @Accessor("itemTransform")
     ItemTransform imt$getItemTransform();
 }

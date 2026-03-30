@@ -29,8 +29,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
 
-public final class Utils
-{
+public final class Utils {
     private static final Codec<Vector3fc> VECTOR3FC_CODEC = Codec.FLOAT.listOf(3, 3)
             .xmap(
                     floats -> new Vector3f(floats.getFirst(), floats.get(1), floats.get(2)),
@@ -51,13 +50,11 @@ public final class Utils
     private static final Style STYLE_SELECTED = Style.EMPTY.withColor(0xFF6666);
     private static final String CODE_INDENT = " ".repeat(4);
 
-    public static Component printVector(Vector3fc vec, boolean selected, int element)
-    {
+    public static Component printVector(Vector3fc vec, boolean selected, int element) {
         return printVector(vec, selected, element, 1F);
     }
 
-    public static Component printVector(Vector3fc vec, boolean selected, int element, float mult)
-    {
+    public static Component printVector(Vector3fc vec, boolean selected, int element, float mult) {
         return Component.literal("[ ").setStyle(STYLE_DEFAULT)
                 .append(printComponent(vec.x() * mult, selected && element == 0))
                 .append(Component.literal(" | ").setStyle(STYLE_DEFAULT))
@@ -67,59 +64,48 @@ public final class Utils
                 .append(Component.literal(" ]").setStyle(STYLE_DEFAULT));
     }
 
-    private static Component printComponent(float val, boolean selected)
-    {
+    private static Component printComponent(float val, boolean selected) {
         MutableComponent result = Component.empty();
         String text = "%7.3f".formatted(val);
         int idx = text.lastIndexOf(' ') + 1;
-        if (idx > 0)
-        {
+        if (idx > 0) {
             result.append(Component.literal(text.substring(0, idx)).setStyle(FULL_SPACE_FONT));
             text = text.substring(idx);
         }
         return result.append(Component.literal(text).setStyle(selected ? STYLE_SELECTED : STYLE_DEFAULT));
     }
 
-    public static String encodeItemTransform(ItemTransform[] xforms)
-    {
+    public static String encodeItemTransform(ItemTransform[] xforms) {
         JsonObject obj = new JsonObject();
-        for (ItemDisplayContext ctx : ItemDisplayContext.values())
-        {
-            if (ctx == ItemDisplayContext.NONE) continue;
+        for (ItemDisplayContext ctx : ItemDisplayContext.values()) {
+            if (ctx == ItemDisplayContext.NONE) { continue; }
 
             ItemTransform xform = xforms[ctx.ordinal() - 1];
-            if (!xform.equals(ItemTransform.NO_TRANSFORM))
-            {
+            if (!xform.equals(ItemTransform.NO_TRANSFORM)) {
                 JsonElement xformElem = TRANSFORM_CODEC.encodeStart(JsonOps.INSTANCE, xform).getOrThrow();
                 obj.add(ctx.getSerializedName(), xformElem);
             }
         }
 
-        try
-        {
+        try {
             StringWriter stringWriter = new StringWriter();
             JsonWriter jsonWriter = new JsonWriter(stringWriter);
             jsonWriter.setStrictness(Strictness.LENIENT);
             jsonWriter.setIndent("  ");
             Streams.write(obj, jsonWriter);
             return "\"display\": %s".formatted(stringWriter);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             throw new RuntimeException("Encountered an exception while printing item transform JSON", e);
         }
     }
 
-    public static String printDatagenCode(ItemTransform[] xforms)
-    {
+    public static String printDatagenCode(ItemTransform[] xforms) {
         StringBuilder builder = new StringBuilder("ExtendedModelTemplateBuilder.builder()");
-        for (ItemDisplayContext ctx : ItemDisplayContext.values())
-        {
-            if (ctx == ItemDisplayContext.NONE) continue;
+        for (ItemDisplayContext ctx : ItemDisplayContext.values()) {
+            if (ctx == ItemDisplayContext.NONE) { continue; }
 
             ItemTransform xform = xforms[ctx.ordinal() - 1];
-            if (!xform.equals(ItemTransform.NO_TRANSFORM))
-            {
+            if (!xform.equals(ItemTransform.NO_TRANSFORM)) {
                 builder.append("\n")
                         .append(CODE_INDENT.repeat(2))
                         .append(".transform(ItemDisplayContext.")
@@ -138,10 +124,8 @@ public final class Utils
         return builder.append("\n").append(CODE_INDENT.repeat(2)).append(".build();").toString();
     }
 
-    private static void printTransformEntry(StringBuilder builder, String mthName, Vector3fc value, float multiplier, Vector3f defaultValue)
-    {
-        if (!value.equals(defaultValue))
-        {
+    private static void printTransformEntry(StringBuilder builder, String mthName, Vector3fc value, float multiplier, Vector3f defaultValue) {
+        if (!value.equals(defaultValue)) {
             builder.append("\n")
                     .append(CODE_INDENT.repeat(4))
                     .append(".")
@@ -156,32 +140,26 @@ public final class Utils
         }
     }
 
-    public static void releaseAllKeys(InputConstants.Key key)
-    {
+    public static void releaseAllKeys(InputConstants.Key key) {
         KeyMappingLookup map = AccessorKeyMapping.itemmodeltransformer$getKeyMap();
         map.getAll(key).forEach(keyMapping -> ((AccessorKeyMapping) keyMapping).itemmodeltransformer$release());
     }
 
-    public static void releaseKey(KeyMapping keybind)
-    {
+    public static void releaseKey(KeyMapping keybind) {
         ((AccessorKeyMapping) keybind).itemmodeltransformer$release();
     }
 
-    public static Component formatKeybind(Lazy<KeyMapping> key)
-    {
+    public static Component formatKeybind(Lazy<KeyMapping> key) {
         return Component.literal("[")
                 .append(key.get().getTranslatedKeyMessage())
                 .append(Component.literal("]"))
                 .setStyle(Style.EMPTY.applyFormat(ChatFormatting.GOLD));
     }
 
-    public static Component formatKeyCombination(Component... keyNames)
-    {
+    public static Component formatKeyCombination(Component... keyNames) {
         MutableComponent result = Component.literal("[");
-        for (int i = 0; i < keyNames.length; i++)
-        {
-            if (i > 0)
-            {
+        for (int i = 0; i < keyNames.length; i++) {
+            if (i > 0) {
                 result.append(Component.literal(" + "));
             }
             result.append(keyNames[i]);
@@ -189,8 +167,7 @@ public final class Utils
         return result.append(Component.literal("]")).setStyle(Style.EMPTY.applyFormat(ChatFormatting.GOLD));
     }
 
-    public static Identifier rl(String path)
-    {
+    public static Identifier rl(String path) {
         return Identifier.fromNamespaceAndPath(ItemModelTransformer.MOD_ID, path);
     }
 

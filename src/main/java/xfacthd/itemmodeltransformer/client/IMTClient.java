@@ -16,8 +16,7 @@ import xfacthd.itemmodeltransformer.client.util.Utils;
 
 @Mod(value = ItemModelTransformer.MOD_ID, dist = Dist.CLIENT)
 @SuppressWarnings("UtilityClassWithPublicConstructor")
-public final class IMTClient
-{
+public final class IMTClient {
     private static final KeyMapping.Category CATEGORY = new KeyMapping.Category(Utils.rl("main"));
     private static final Lazy<KeyMapping> KEY_TOGGLE_TRANSFORMER = makeKeybind("toggle", GLFW.GLFW_KEY_I, false, false);
     public static final Lazy<KeyMapping> KEY_PREV_CATEGORY = makeKeybind("prev_category", GLFW.GLFW_KEY_UP, true, false);
@@ -32,16 +31,14 @@ public final class IMTClient
     public static final Lazy<KeyMapping> KEY_PRINT_DATAGEN = makeKeybind("print_datagen", GLFW.GLFW_KEY_G, true, false);
     public static final Lazy<KeyMapping> KEY_TOGGLE_USAGE = makeKeybind("toggle_usage", GLFW.GLFW_KEY_H, true, false);
 
-    public IMTClient(IEventBus modBus)
-    {
+    public IMTClient(IEventBus modBus) {
         modBus.addListener(IMTClient::onRegisterKeyMappings);
         modBus.addListener(IMTClient::onRegisterGuiOverlays);
 
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, IMTClient::onClientTick);
     }
 
-    private static void onRegisterKeyMappings(final RegisterKeyMappingsEvent event)
-    {
+    private static void onRegisterKeyMappings(final RegisterKeyMappingsEvent event) {
         event.registerCategory(CATEGORY);
 
         event.register(KEY_TOGGLE_TRANSFORMER.get());
@@ -58,36 +55,29 @@ public final class IMTClient
         event.register(KEY_TOGGLE_USAGE.get());
     }
 
-    private static void onRegisterGuiOverlays(final RegisterGuiLayersEvent event)
-    {
+    private static void onRegisterGuiOverlays(final RegisterGuiLayersEvent event) {
         event.registerAboveAll(Utils.rl("transform_editor"), new TransformOverlay());
     }
 
-    private static void onClientTick(final ClientTickEvent.Pre event)
-    {
+    private static void onClientTick(final ClientTickEvent.Pre event) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null || mc.player == null) return;
+        if (mc.level == null || mc.player == null) {
+            return;
+        }
 
-        if (KEY_TOGGLE_TRANSFORMER.get().consumeClick())
-        {
+        if (KEY_TOGGLE_TRANSFORMER.get().consumeClick()) {
             TransformOverlay.toggleEnabled();
         }
         TransformOverlay.handleInput();
     }
 
-    private static Lazy<KeyMapping> makeKeybind(String name, int key, boolean useConflictCtx, boolean incDec)
-    {
-        return Lazy.of(() ->
-        {
-            KeyMapping keybind = new KeyMapping("key." + ItemModelTransformer.MOD_ID +"." + name, key, CATEGORY);
-            if (useConflictCtx)
-            {
-                if (incDec)
-                {
+    private static Lazy<KeyMapping> makeKeybind(String name, int key, boolean useConflictCtx, boolean incDec) {
+        return Lazy.of(() -> {
+            KeyMapping keybind = new KeyMapping("key." + ItemModelTransformer.MOD_ID + "." + name, key, CATEGORY);
+            if (useConflictCtx) {
+                if (incDec) {
                     keybind.setKeyConflictContext(TransformerKeyConflictContext.INSTANCE_INC_DEC);
-                }
-                else
-                {
+                } else {
                     keybind.setKeyConflictContext(TransformerKeyConflictContext.INSTANCE);
                 }
             }

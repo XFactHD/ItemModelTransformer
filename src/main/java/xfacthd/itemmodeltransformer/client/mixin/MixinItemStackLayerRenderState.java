@@ -15,8 +15,7 @@ import xfacthd.itemmodeltransformer.client.screen.TransformOverlay;
 import xfacthd.itemmodeltransformer.client.util.ItemAwareItemStackRenderState;
 
 @Mixin(ItemStackRenderState.LayerRenderState.class)
-public final class MixinItemStackLayerRenderState
-{
+public final class MixinItemStackLayerRenderState {
     @Shadow
     @Final
     private ItemStackRenderState this$0;
@@ -28,8 +27,7 @@ public final class MixinItemStackLayerRenderState
                     target = "Lnet/minecraft/client/resources/model/cuboid/ItemTransform;apply(ZLcom/mojang/blaze3d/vertex/PoseStack$Pose;)V"
             )
     )
-    private void itemmodeltransformer$injectModifiedItemTransform(ItemTransform originalXforms, boolean leftHand, PoseStack.Pose pose, Operation<Void> operation)
-    {
+    private void itemmodeltransformer$injectModifiedItemTransform(ItemTransform originalXforms, boolean leftHand, PoseStack.Pose pose, Operation<Void> operation) {
         Item item = ((ItemAwareItemStackRenderState) this$0).imt$getItem();
         ItemDisplayContext ctx = ((ItemAwareItemStackRenderState) this$0).imt$getDisplayContext();
         operation.call(TransformOverlay.getActiveTransform(item, ctx, originalXforms), leftHand, pose);
