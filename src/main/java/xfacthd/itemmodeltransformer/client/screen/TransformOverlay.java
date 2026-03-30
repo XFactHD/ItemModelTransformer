@@ -29,6 +29,7 @@ import org.joml.Vector3fc;
 import org.lwjgl.glfw.GLFW;
 import xfacthd.itemmodeltransformer.client.IMTClient;
 import xfacthd.itemmodeltransformer.client.mixin.AccessorItemStackRenderStateLayer;
+import xfacthd.itemmodeltransformer.client.util.TransformPrinter;
 import xfacthd.itemmodeltransformer.client.util.Utils;
 
 import java.util.Arrays;
@@ -313,12 +314,12 @@ public final class TransformOverlay implements GuiLayer {
                 SCRATCH_RENDER_STATE.clear();
             }
         } else if (wasClicked(IMTClient.KEY_PRINT_JSON)) {
-            String out = Utils.encodeItemTransform(SCRATCH_TRANSFORMS);
+            String out = TransformPrinter.printJson(SCRATCH_TRANSFORMS);
             Minecraft.getInstance().keyboardHandler.setClipboard(out);
             //noinspection ConstantConditions
             Minecraft.getInstance().player.sendOverlayMessage(MSG_COPIED_JSON);
         } else if (wasClicked(IMTClient.KEY_PRINT_DATAGEN)) {
-            String out = Utils.printDatagenCode(SCRATCH_TRANSFORMS);
+            String out = TransformPrinter.printDatagen(SCRATCH_TRANSFORMS);
             Minecraft.getInstance().keyboardHandler.setClipboard(out);
             //noinspection ConstantConditions
             Minecraft.getInstance().player.sendOverlayMessage(MSG_COPIED_CODE);

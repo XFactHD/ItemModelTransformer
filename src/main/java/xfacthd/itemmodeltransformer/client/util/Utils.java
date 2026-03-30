@@ -1,54 +1,23 @@
 package xfacthd.itemmodeltransformer.client.util;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.Strictness;
-import com.google.gson.internal.Streams;
-import com.google.gson.stream.JsonWriter;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.JsonOps;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.resources.model.cuboid.ItemTransform;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.neoforged.neoforge.client.settings.KeyMappingLookup;
 import net.neoforged.neoforge.common.util.Lazy;
-import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import xfacthd.itemmodeltransformer.ItemModelTransformer;
 import xfacthd.itemmodeltransformer.client.mixin.AccessorKeyMapping;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.List;
-
 public final class Utils {
-    private static final Codec<Vector3fc> VECTOR3FC_CODEC = Codec.FLOAT.listOf(3, 3)
-            .xmap(
-                    floats -> new Vector3f(floats.getFirst(), floats.get(1), floats.get(2)),
-                    vector -> List.of(vector.x(), vector.y(), vector.z())
-            );
-    private static final Codec<ItemTransform> TRANSFORM_CODEC = RecordCodecBuilder.create(inst -> inst.group(
-            VECTOR3FC_CODEC.fieldOf("rotation").forGetter(ItemTransform::rotation),
-            VECTOR3FC_CODEC.fieldOf("translation").<Vector3fc>xmap(
-                    // Translation is a special snowflake and gets divided by 16, see ItemTransform.Deserializer
-                    v -> new Vector3f(v.x() / 16F, v.y() / 16F, v.y() / 16F),
-                    v -> new Vector3f(v.x() * 16F, v.y() * 16F, v.y() * 16F)
-            ).forGetter(ItemTransform::translation),
-            VECTOR3FC_CODEC.fieldOf("scale").forGetter(ItemTransform::scale),
-            VECTOR3FC_CODEC.fieldOf("right_rotation").forGetter(ItemTransform::rightRotation)
-    ).apply(inst, ItemTransform::new));
     private static final Style FULL_SPACE_FONT = Style.EMPTY.withFont(new FontDescription.Resource(Utils.rl("full_space")));
     private static final Style STYLE_DEFAULT = Style.EMPTY.applyFormat(ChatFormatting.WHITE);
     private static final Style STYLE_SELECTED = Style.EMPTY.withColor(0xFF6666);
-    private static final String CODE_INDENT = " ".repeat(4);
 
     public static Component printVector(Vector3fc vec, boolean selected, int element) {
         return printVector(vec, selected, element, 1F);
@@ -73,71 +42,6 @@ public final class Utils {
             text = text.substring(idx);
         }
         return result.append(Component.literal(text).setStyle(selected ? STYLE_SELECTED : STYLE_DEFAULT));
-    }
-
-    public static String encodeItemTransform(ItemTransform[] xforms) {
-        JsonObject obj = new JsonObject();
-        for (ItemDisplayContext ctx : ItemDisplayContext.values()) {
-            if (ctx == ItemDisplayContext.NONE) { continue; }
-
-            ItemTransform xform = xforms[ctx.ordinal() - 1];
-            if (!xform.equals(ItemTransform.NO_TRANSFORM)) {
-                JsonElement xformElem = TRANSFORM_CODEC.encodeStart(JsonOps.INSTANCE, xform).getOrThrow();
-                obj.add(ctx.getSerializedName(), xformElem);
-            }
-        }
-
-        try {
-            StringWriter stringWriter = new StringWriter();
-            JsonWriter jsonWriter = new JsonWriter(stringWriter);
-            jsonWriter.setStrictness(Strictness.LENIENT);
-            jsonWriter.setIndent("  ");
-            Streams.write(obj, jsonWriter);
-            return "\"display\": %s".formatted(stringWriter);
-        } catch (IOException e) {
-            throw new RuntimeException("Encountered an exception while printing item transform JSON", e);
-        }
-    }
-
-    public static String printDatagenCode(ItemTransform[] xforms) {
-        StringBuilder builder = new StringBuilder("ExtendedModelTemplateBuilder.builder()");
-        for (ItemDisplayContext ctx : ItemDisplayContext.values()) {
-            if (ctx == ItemDisplayContext.NONE) { continue; }
-
-            ItemTransform xform = xforms[ctx.ordinal() - 1];
-            if (!xform.equals(ItemTransform.NO_TRANSFORM)) {
-                builder.append("\n")
-                        .append(CODE_INDENT.repeat(2))
-                        .append(".transform(ItemDisplayContext.")
-                        .append(ctx)
-                        .append(", builder -> builder");
-
-                printTransformEntry(builder, "rotation", xform.rotation(), 1F, ItemTransform.Deserializer.DEFAULT_ROTATION);
-                // Translation is a special snowflake and gets divided by 16, see ItemTransform.Deserializer
-                printTransformEntry(builder, "translation", xform.translation(), 16F, ItemTransform.Deserializer.DEFAULT_TRANSLATION);
-                printTransformEntry(builder, "scale", xform.scale(), 1F, ItemTransform.Deserializer.DEFAULT_SCALE);
-                printTransformEntry(builder, "rightRotation", xform.rightRotation(), 1F, ItemTransform.Deserializer.DEFAULT_ROTATION);
-
-                builder.append("\n").append(CODE_INDENT.repeat(2)).append(")");
-            }
-        }
-        return builder.append("\n").append(CODE_INDENT.repeat(2)).append(".build();").toString();
-    }
-
-    private static void printTransformEntry(StringBuilder builder, String mthName, Vector3fc value, float multiplier, Vector3f defaultValue) {
-        if (!value.equals(defaultValue)) {
-            builder.append("\n")
-                    .append(CODE_INDENT.repeat(4))
-                    .append(".")
-                    .append(mthName)
-                    .append("(")
-                    .append(value.x() * multiplier)
-                    .append(", ")
-                    .append(value.y() * multiplier)
-                    .append(", ")
-                    .append(value.z() * multiplier)
-                    .append(")");
-        }
     }
 
     public static void releaseAllKeys(InputConstants.Key key) {
