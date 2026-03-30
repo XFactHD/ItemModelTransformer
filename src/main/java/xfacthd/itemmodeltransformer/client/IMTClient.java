@@ -25,8 +25,8 @@ public final class IMTClient {
     public static final Lazy<KeyMapping> KEY_NEXT_ELEMENT = makeKeybind("next_element", GLFW.GLFW_KEY_RIGHT, true, false);
     public static final Lazy<KeyMapping> KEY_DECREMENT = makeKeybind("decrement", GLFW.GLFW_KEY_KP_SUBTRACT, true, true);
     public static final Lazy<KeyMapping> KEY_INCREMENT = makeKeybind("increment", GLFW.GLFW_KEY_KP_ADD, true, true);
-    public static final Lazy<KeyMapping> KEY_CLEAR = makeKeybind("clear", GLFW.GLFW_KEY_C, true, false);
-    public static final Lazy<KeyMapping> KEY_LOAD = makeKeybind("load", GLFW.GLFW_KEY_L, true, false);
+    public static final Lazy<KeyMapping> KEY_CLEAR = makeKeybind("clear", GLFW.GLFW_KEY_C, true, true);
+    public static final Lazy<KeyMapping> KEY_LOAD = makeKeybind("load", GLFW.GLFW_KEY_L, true, true);
     public static final Lazy<KeyMapping> KEY_PRINT_JSON = makeKeybind("print_json", GLFW.GLFW_KEY_P, true, false);
     public static final Lazy<KeyMapping> KEY_PRINT_DATAGEN = makeKeybind("print_datagen", GLFW.GLFW_KEY_G, true, false);
     public static final Lazy<KeyMapping> KEY_TOGGLE_USAGE = makeKeybind("toggle_usage", GLFW.GLFW_KEY_H, true, false);
@@ -71,12 +71,12 @@ public final class IMTClient {
         TransformOverlay.handleInput();
     }
 
-    private static Lazy<KeyMapping> makeKeybind(String name, int key, boolean useConflictCtx, boolean incDec) {
+    private static Lazy<KeyMapping> makeKeybind(String name, int key, boolean useConflictCtx, boolean usesModifiers) {
         return Lazy.of(() -> {
             KeyMapping keybind = new KeyMapping("key." + ItemModelTransformer.MOD_ID + "." + name, key, CATEGORY);
             if (useConflictCtx) {
-                if (incDec) {
-                    keybind.setKeyConflictContext(TransformerKeyConflictContext.INSTANCE_INC_DEC);
+                if (usesModifiers) {
+                    keybind.setKeyConflictContext(TransformerKeyConflictContext.INSTANCE_MODIFIERS);
                 } else {
                     keybind.setKeyConflictContext(TransformerKeyConflictContext.INSTANCE);
                 }

@@ -7,7 +7,7 @@ import xfacthd.itemmodeltransformer.client.screen.TransformOverlay;
 
 public sealed class TransformerKeyConflictContext implements IKeyConflictContext {
     public static final IKeyConflictContext INSTANCE = new TransformerKeyConflictContext();
-    public static final IKeyConflictContext INSTANCE_INC_DEC = new TransformerKeyConflictContext.IncDec();
+    public static final IKeyConflictContext INSTANCE_MODIFIERS = new WithModifiers();
 
     private TransformerKeyConflictContext() { }
 
@@ -18,13 +18,13 @@ public sealed class TransformerKeyConflictContext implements IKeyConflictContext
 
     @Override
     public boolean conflicts(IKeyConflictContext other) {
-        return other == INSTANCE || other == INSTANCE_INC_DEC;
+        return other == INSTANCE || other == INSTANCE_MODIFIERS;
     }
 
-    private static final class IncDec extends TransformerKeyConflictContext {
+    private static final class WithModifiers extends TransformerKeyConflictContext {
         @Override
         public boolean conflicts(IKeyConflictContext other) {
-            // Must conflict with IN_GAME to allow modifiers to be used for range adjustment
+            // Must conflict with IN_GAME to allow modifiers to be used for range adjustment, load and clear
             return super.conflicts(other) || other == KeyConflictContext.IN_GAME;
         }
     }

@@ -14,14 +14,14 @@ public final class TransformPrinter {
     private static final String DATAGEN_ATTRIBUTE_INDENT = INDENT.repeat(4);
 
     @SuppressWarnings("UnusedAssignment")
-    public static String printJson(ItemTransform[] transforms) {
+    public static String printJson(TransformHolder[] transforms) {
         StringBuilder builder = new StringBuilder("\"display\": {\n");
         boolean perspectivePrinted = false;
         for (ItemDisplayContext perspective : PERSPECTIVES) {
             if (perspective == ItemDisplayContext.NONE) {
                 continue;
             }
-            ItemTransform transform = transforms[perspective.ordinal() - 1];
+            ItemTransform transform = transforms[perspective.ordinal() - 1].getTransform();
             if (isEmptyTransform(transform)) {
                 continue;
             }
@@ -44,7 +44,7 @@ public final class TransformPrinter {
     }
 
     private static boolean printAttributeJson(StringBuilder builder, String type, Vector3fc value, Vector3fc defaultValue, boolean prevPrinted, float multiplier) {
-        if (equals(value, defaultValue)) {
+        if (Utils.equals(value, defaultValue)) {
             return false;
         }
 
@@ -64,13 +64,13 @@ public final class TransformPrinter {
         return true;
     }
 
-    public static String printDatagen(ItemTransform[] transforms) {
+    public static String printDatagen(TransformHolder[] transforms) {
         StringBuilder builder = new StringBuilder("ExtendedModelTemplateBuilder.builder()");
         for (ItemDisplayContext perspective : PERSPECTIVES) {
             if (perspective == ItemDisplayContext.NONE) {
                 continue;
             }
-            ItemTransform transform = transforms[perspective.ordinal() - 1];
+            ItemTransform transform = transforms[perspective.ordinal() - 1].getTransform();
             if (isEmptyTransform(transform)) {
                 continue;
             }
@@ -93,7 +93,7 @@ public final class TransformPrinter {
     }
 
     private static void printAttributeDatagen(StringBuilder builder, String type, Vector3fc value, Vector3fc defaultValue, float multiplier) {
-        if (equals(value, defaultValue)) {
+        if (Utils.equals(value, defaultValue)) {
             return;
         }
 
@@ -120,14 +120,7 @@ public final class TransformPrinter {
     }
 
     private static boolean isEmptyTransform(ItemTransform transform) {
-        return equals(transform.rotation(), ItemTransform.NO_TRANSFORM.rotation()) &&
-                equals(transform.translation(), ItemTransform.NO_TRANSFORM.translation()) &&
-                equals(transform.scale(), ItemTransform.NO_TRANSFORM.scale()) &&
-                equals(transform.rightRotation(), ItemTransform.NO_TRANSFORM.rightRotation());
-    }
-
-    private static boolean equals(Vector3fc vecOne, Vector3fc vecTwo) {
-        return Mth.equal(vecOne.x(), vecTwo.x()) && Mth.equal(vecOne.y(), vecTwo.y()) && Mth.equal(vecOne.z(), vecTwo.z());
+        return Utils.equals(transform, ItemTransform.NO_TRANSFORM);
     }
 
     private TransformPrinter() { }

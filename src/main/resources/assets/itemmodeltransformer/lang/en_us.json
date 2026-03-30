@@ -25,7 +25,9 @@
     "desc.itemmodeltransformer.usage.next_element": "- Next element: %s",
     "desc.itemmodeltransformer.usage.inc_dec": "- Increment: %s / Decrement: %s",
     "desc.itemmodeltransformer.usage.clear": "- Clear values: %s",
+    "desc.itemmodeltransformer.usage.clear.all": "  \u2514 Clear all types: Hold %s",
     "desc.itemmodeltransformer.usage.load": "- Load from held item: %s",
+    "desc.itemmodeltransformer.usage.load.overwrite": "  \u2514 Overwrite modified: Hold %s",
     "desc.itemmodeltransformer.usage.print_json": "- Copy JSON to clipboard: %s",
     "desc.itemmodeltransformer.usage.print_datagen": "- Copy datagen code to clipboard: %s",
     "desc.itemmodeltransformer.usage.inc_dec.x10_0": "  \u251C by 10: Hold %s",
@@ -36,8 +38,10 @@
     "desc.itemmodeltransformer.key.cmd": "Command",
     "desc.itemmodeltransformer.key.shift": "Shift",
     "desc.itemmodeltransformer.key.alt": "Alt",
-    "msg.itemmodeltransformer.cleared": "Cleared transform values",
-    "msg.itemmodeltransformer.loaded_from_item": "Loaded transform from held item",
+    "msg.itemmodeltransformer.cleared": "Cleared transform values of active transform type",
+    "msg.itemmodeltransformer.cleared_all": "Cleared transform values of all transform types",
+    "msg.itemmodeltransformer.loaded_from_item": "Loaded transforms for all transform types from held item",
+    "msg.itemmodeltransformer.loaded_from_item_partial": "Loaded transform for unmodified transform types from held item",
     "msg.itemmodeltransformer.copied_json_to_clipboard": "Copied JSON to clipboard",
     "msg.itemmodeltransformer.copied_code_to_clipboard": "Copied datagen code to clipboard"
 }

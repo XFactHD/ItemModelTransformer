@@ -3,11 +3,13 @@ package xfacthd.itemmodeltransformer.client.util;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.resources.model.cuboid.ItemTransform;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
 import net.neoforged.neoforge.client.settings.KeyMappingLookup;
 import net.neoforged.neoforge.common.util.Lazy;
 import org.joml.Vector3fc;
@@ -73,6 +75,17 @@ public final class Utils {
 
     public static Identifier rl(String path) {
         return Identifier.fromNamespaceAndPath(ItemModelTransformer.MOD_ID, path);
+    }
+
+    public static boolean equals(ItemTransform xformOne, ItemTransform xformTwo) {
+        return equals(xformOne.rotation(), xformTwo.rotation()) &&
+                equals(xformOne.translation(), xformTwo.translation()) &&
+                equals(xformOne.scale(), xformTwo.scale()) &&
+                equals(xformOne.rightRotation(), xformTwo.rightRotation());
+    }
+
+    public static boolean equals(Vector3fc vecOne, Vector3fc vecTwo) {
+        return Mth.equal(vecOne.x(), vecTwo.x()) && Mth.equal(vecOne.y(), vecTwo.y()) && Mth.equal(vecOne.z(), vecTwo.z());
     }
 
     private Utils() { }

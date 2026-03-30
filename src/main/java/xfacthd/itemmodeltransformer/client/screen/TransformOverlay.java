@@ -25,15 +25,16 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.gui.GuiLayer;
 import net.neoforged.neoforge.common.util.Lazy;
 import org.joml.Vector3f;
-import org.joml.Vector3fc;
 import org.lwjgl.glfw.GLFW;
 import xfacthd.itemmodeltransformer.client.IMTClient;
 import xfacthd.itemmodeltransformer.client.mixin.AccessorItemStackRenderStateLayer;
+import xfacthd.itemmodeltransformer.client.util.TransformHolder;
 import xfacthd.itemmodeltransformer.client.util.TransformPrinter;
 import xfacthd.itemmodeltransformer.client.util.Utils;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public final class TransformOverlay implements GuiLayer {
     private static final ItemDisplayContext[] CONTEXTS = ItemDisplayContext.values();
@@ -43,7 +44,7 @@ public final class TransformOverlay implements GuiLayer {
     private static final int LINE_HEIGHT = 10;
     private static final int LINE_PADDING = 5;
     private static final int HEIGHT_BASE = (LINE_HEIGHT * 2 + LINE_PADDING) * LINE_COUNT + LINE_HEIGHT;
-    private static final int HEIGHT_USAGE = HEIGHT_BASE + (LINE_HEIGHT * 13);
+    private static final int HEIGHT_USAGE = HEIGHT_BASE + (LINE_HEIGHT * 15);
     private static final int TOOLTIP_DIFF = 4;
     private static final int KEY_LEFT_SHIFT = GLFW.GLFW_KEY_LEFT_SHIFT;
     private static final int KEY_RIGHT_SHIFT = GLFW.GLFW_KEY_RIGHT_SHIFT;
@@ -58,7 +59,9 @@ public final class TransformOverlay implements GuiLayer {
     private static final Component DESC_CAT_SCALE = Component.translatable("desc.itemmodeltransformer.category.scale");
     private static final Component DESC_CAT_POST_ROTATION = Component.translatable("desc.itemmodeltransformer.category.post_rotation");
     private static final Component MSG_CLEARED = Component.translatable("msg.itemmodeltransformer.cleared");
+    private static final Component MSG_CLEARED_ALL = Component.translatable("msg.itemmodeltransformer.cleared_all");
     private static final Component MSG_LOADED = Component.translatable("msg.itemmodeltransformer.loaded_from_item");
+    private static final Component MSG_LOADED_PARTIAL = Component.translatable("msg.itemmodeltransformer.loaded_from_item_partial");
     private static final Component MSG_COPIED_JSON = Component.translatable("msg.itemmodeltransformer.copied_json_to_clipboard");
     private static final Component MSG_COPIED_CODE = Component.translatable("msg.itemmodeltransformer.copied_code_to_clipboard");
     private static final Component DESC_KEY_CTRL = Component.translatable("desc.itemmodeltransformer.key.ctrl");
@@ -80,15 +83,18 @@ public final class TransformOverlay implements GuiLayer {
             "desc.itemmodeltransformer.usage.inc_dec.x0_001",
             Utils.formatKeyCombination(DESC_KEY_SHIFT, DESC_KEY_CTRL)
     );
+    private static final Component DESC_CLEAR_ALL = Component.translatable(
+            "desc.itemmodeltransformer.usage.clear.all",
+            Utils.formatKeyCombination(DESC_KEY_SHIFT)
+    );
+    private static final Component DESC_LOAD_OVERWRITE = Component.translatable(
+            "desc.itemmodeltransformer.usage.load.overwrite",
+            Utils.formatKeyCombination(DESC_KEY_SHIFT)
+    );
 
-    private static final ItemTransform[] SCRATCH_TRANSFORMS = Util.make(
-            new ItemTransform[CONTEXTS.length - 1],
-            arr -> Arrays.setAll(arr, _ -> new ItemTransform(
-                    new Vector3f(ItemTransform.Deserializer.DEFAULT_ROTATION),
-                    new Vector3f(ItemTransform.Deserializer.DEFAULT_TRANSLATION),
-                    new Vector3f(ItemTransform.Deserializer.DEFAULT_SCALE),
-                    new Vector3f(ItemTransform.Deserializer.DEFAULT_ROTATION)
-            ))
+    private static final TransformHolder[] SCRATCH_TRANSFORMS = Util.make(
+            new TransformHolder[CONTEXTS.length - 1],
+            arr -> Arrays.setAll(arr, i -> new TransformHolder(CONTEXTS[i + 1]))
     );
     private static boolean enabled = false;
     private static ItemDisplayContext currContext = ItemDisplayContext.THIRD_PERSON_LEFT_HAND;
@@ -112,11 +118,12 @@ public final class TransformOverlay implements GuiLayer {
         int height = (showUsage ? HEIGHT_USAGE : HEIGHT_BASE) - TOOLTIP_DIFF;
         TooltipRenderUtil.extractTooltipBackground(graphics, 4, 4, width, height, null);
 
-        ItemTransform xform = getScratchTransform();
+        TransformHolder holder = getScratchTransform();
+        ItemTransform xform = holder.getTransform();
 
         boolean selected = line == 0;
         graphics.text(font, DESC_CAT_TYPE, 3, 3, selected ? 0xFF66FF66 : 0xFFFFFFFF, false);
-        graphics.text(font, currContext.getSerializedName(), 3, 13, 0xFFFFFFFF, false);
+        graphics.text(font, holder.printType(), 3, 13, 0xFFFFFFFF, false);
 
         selected = line == 1;
         graphics.text(font, DESC_CAT_ROTATION, 3, 28, selected ? 0xFF66FF66 : 0xFFFFFFFF, false);
@@ -148,8 +155,12 @@ public final class TransformOverlay implements GuiLayer {
         return enabled;
     }
 
-    private static ItemTransform getScratchTransform() {
+    private static TransformHolder getScratchTransform() {
         return SCRATCH_TRANSFORMS[currContext.ordinal() - 1];
+    }
+
+    private static TransformHolder getScratchTransform(ItemDisplayContext context) {
+        return SCRATCH_TRANSFORMS[context.ordinal() - 1];
     }
 
     public static boolean isItemAffected(Item item, ItemDisplayContext context) {
@@ -175,7 +186,7 @@ public final class TransformOverlay implements GuiLayer {
     }
 
     public static ItemTransform getActiveTransform(Item item, ItemDisplayContext context, ItemTransform originalXform) {
-        return isItemAffected(item, context) ? getScratchTransform() : originalXform;
+        return isItemAffected(item, context) ? getScratchTransform().getTransform() : originalXform;
     }
 
     private static Component[] makeUsageLines() {
@@ -222,10 +233,12 @@ public final class TransformOverlay implements GuiLayer {
                         "desc.itemmodeltransformer.usage.clear",
                         Utils.formatKeybind(IMTClient.KEY_CLEAR)
                 ),
+                DESC_CLEAR_ALL,
                 Component.translatable(
                         "desc.itemmodeltransformer.usage.load",
                         Utils.formatKeybind(IMTClient.KEY_LOAD)
                 ),
+                DESC_LOAD_OVERWRITE,
                 Component.translatable(
                         "desc.itemmodeltransformer.usage.print_json",
                         Utils.formatKeybind(IMTClient.KEY_PRINT_JSON)
@@ -265,53 +278,56 @@ public final class TransformOverlay implements GuiLayer {
         } else if (line > 0 && wasClicked(IMTClient.KEY_NEXT_ELEMENT)) {
             element = Mth.positiveModulo(element + 1, ELEMENT_COUNT);
         } else if (wasClicked(IMTClient.KEY_DECREMENT)) {
-            ItemTransform xform = getScratchTransform();
+            TransformHolder holder = getScratchTransform();
+            float magnitude = getMagnitude(-1F);
             switch (line) {
                 case 0 -> cycleContext(-1);
-                case 1 -> modifyVector(xform.rotation(), -1F, true, 360F);
-                // Translation is a special snowflake and gets divided by 16, see ItemTransform.Deserializer
-                case 2 -> modifyVector(xform.translation(), -.0625F, false, ItemTransform.Deserializer.MAX_TRANSLATION);
-                case 3 -> modifyVector(xform.scale(), -1F, false, ItemTransform.Deserializer.MAX_SCALE);
-                case 4 -> modifyVector(xform.rightRotation(), -1F, true, 360F);
+                case 1 -> holder.modify(TransformHolder.Attribute.ROTATION, element, magnitude);
+                case 2 -> holder.modify(TransformHolder.Attribute.TRANSLATION, element, magnitude);
+                case 3 -> holder.modify(TransformHolder.Attribute.SCALE, element, magnitude);
+                case 4 -> holder.modify(TransformHolder.Attribute.RIGHT_ROTATION, element, magnitude);
             }
         } else if (wasClicked(IMTClient.KEY_INCREMENT)) {
-            ItemTransform xform = getScratchTransform();
+            TransformHolder holder = getScratchTransform();
+            float magnitude = getMagnitude(1F);
             switch (line) {
                 case 0 -> cycleContext(1);
-                case 1 -> modifyVector(xform.rotation(), 1F, true, 360F);
-                // Translation is a special snowflake and gets divided by 16, see ItemTransform.Deserializer
-                case 2 -> modifyVector(xform.translation(), .0625F, false, ItemTransform.Deserializer.MAX_TRANSLATION);
-                case 3 -> modifyVector(xform.scale(), 1F, false, ItemTransform.Deserializer.MAX_SCALE);
-                case 4 -> modifyVector(xform.rightRotation(), 1F, true, 360F);
+                case 1 -> holder.modify(TransformHolder.Attribute.ROTATION, element, magnitude);
+                case 2 -> holder.modify(TransformHolder.Attribute.TRANSLATION, element, magnitude);
+                case 3 -> holder.modify(TransformHolder.Attribute.SCALE, element, magnitude);
+                case 4 -> holder.modify(TransformHolder.Attribute.RIGHT_ROTATION, element, magnitude);
             }
         } else if (wasClicked(IMTClient.KEY_CLEAR)) {
-            ItemTransform xform = getScratchTransform();
-            setVector(xform.rotation(), ItemTransform.Deserializer.DEFAULT_ROTATION);
-            setVector(xform.translation(), ItemTransform.Deserializer.DEFAULT_TRANSLATION);
-            setVector(xform.scale(), ItemTransform.Deserializer.DEFAULT_SCALE);
-            setVector(xform.rightRotation(), ItemTransform.Deserializer.DEFAULT_ROTATION);
+            boolean clearAll = shift;
+            Stream<TransformHolder> transforms;
+            if (clearAll) {
+                transforms = Stream.of(SCRATCH_TRANSFORMS);
+            } else {
+                transforms = Stream.of(getScratchTransform());
+            }
+            transforms.forEach(TransformHolder::clear);
 
             //noinspection ConstantConditions
-            Minecraft.getInstance().player.sendOverlayMessage(MSG_CLEARED);
+            Minecraft.getInstance().player.sendOverlayMessage(clearAll ? MSG_CLEARED_ALL : MSG_CLEARED);
         } else if (wasClicked(IMTClient.KEY_LOAD)) {
             Player player = Minecraft.getInstance().player;
             //noinspection ConstantConditions
             ItemStack stack = player.getMainHandItem();
             if (!stack.isEmpty()) {
                 ItemModelResolver resolver = Minecraft.getInstance().getItemModelResolver();
-                resolver.updateForTopItem(SCRATCH_RENDER_STATE, stack, currContext, player.level(), player, 0);
+                boolean overwrite = shift;
+                boolean partial = false;
+                for (ItemDisplayContext context : CONTEXTS) {
+                    if (context == ItemDisplayContext.NONE) {
+                        continue;
+                    }
 
-                ItemTransform srcXform = ((AccessorItemStackRenderStateLayer) SCRATCH_RENDER_STATE.firstLayer()).imt$getItemTransform();
-                if (srcXform != ItemTransform.NO_TRANSFORM) {
-                    ItemTransform xform = getScratchTransform();
-                    setVector(xform.rotation(), srcXform.rotation());
-                    setVector(xform.translation(), srcXform.translation());
-                    setVector(xform.scale(), srcXform.scale());
-                    setVector(xform.rightRotation(), srcXform.rightRotation());
-                    player.sendOverlayMessage(MSG_LOADED);
+                    resolver.updateForTopItem(SCRATCH_RENDER_STATE, stack, context, player.level(), player, 0);
+                    ItemTransform srcXform = ((AccessorItemStackRenderStateLayer) SCRATCH_RENDER_STATE.firstLayer()).imt$getItemTransform();
+                    partial |= !getScratchTransform(context).load(srcXform, overwrite);
+                    SCRATCH_RENDER_STATE.clear();
                 }
-
-                SCRATCH_RENDER_STATE.clear();
+                player.sendOverlayMessage(partial ? MSG_LOADED_PARTIAL : MSG_LOADED);
             }
         } else if (wasClicked(IMTClient.KEY_PRINT_JSON)) {
             String out = TransformPrinter.printJson(SCRATCH_TRANSFORMS);
@@ -337,7 +353,7 @@ public final class TransformOverlay implements GuiLayer {
         currContext = CONTEXTS[newIdx + 1];
     }
 
-    private static void modifyVector(Vector3fc vec, float dir, boolean wrap, float range) {
+    private static float getMagnitude(float dir) {
         if (ctrl && shift) {
             dir *= .001F;
         } else if (ctrl) {
@@ -347,18 +363,7 @@ public final class TransformOverlay implements GuiLayer {
         } else if (alt) {
             dir *= 10F;
         }
-
-        float component = vec.get(element) + dir;
-        if (wrap) {
-            component = Mth.positiveModulo(component, range);
-        } else {
-            component = Mth.clamp(component, -range, range);
-        }
-        ((Vector3f) vec).setComponent(element, component);
-    }
-
-    private static void setVector(Vector3fc target, Vector3fc source) {
-        ((Vector3f) target).set(source);
+        return dir;
     }
 
     private static boolean wasClicked(Lazy<KeyMapping> keybind) {
