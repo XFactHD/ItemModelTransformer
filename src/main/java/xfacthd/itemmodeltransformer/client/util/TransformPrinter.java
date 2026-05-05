@@ -112,11 +112,15 @@ public final class TransformPrinter {
 
     private static void printFloat(StringBuilder builder, float value, float multiplier) {
         float scaledValue = value * multiplier;
-        float filteredValue = (int) (scaledValue * 1000F) / 1000F;
+        float filteredValue = Math.round(scaledValue * 1000F) / 1000F;
         if (Mth.equal(filteredValue, 0F)) {
             filteredValue = 0F;
         }
-        builder.append(filteredValue);
+        if (filteredValue == (int) filteredValue) {
+            builder.append((int) filteredValue);
+        } else {
+            builder.append(filteredValue);
+        }
     }
 
     private static boolean isEmptyTransform(ItemTransform transform) {
