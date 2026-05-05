@@ -8,7 +8,6 @@ import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
-import java.util.function.Function;
 
 public final class TransformHolder {
     private final ItemDisplayContext perspective;
@@ -31,12 +30,12 @@ public final class TransformHolder {
     }
 
     public void modify(Attribute attrib, int element, float dir) {
-        Vector3fc vec = attrib.lookup.apply(transform);
-        float component = vec.get(element) + (dir * attrib.multiplier);
-        if (attrib.wrap) {
-            component = Mth.positiveModulo(component, attrib.range);
+        Vector3fc vec = attrib.lookup(transform);
+        float component = vec.get(element) + (dir * attrib.getMultiplier());
+        if (attrib.isWrap()) {
+            component = Mth.positiveModulo(component, attrib.getRange());
         } else {
-            component = Mth.clamp(component, -attrib.range, attrib.range);
+            component = Mth.clamp(component, -attrib.getRange(), attrib.getRange());
         }
         ((Vector3f) vec).setComponent(element, component);
 
@@ -77,44 +76,5 @@ public final class TransformHolder {
             type += " *";
         }
         return type;
-    }
-
-    public enum Attribute {
-        ROTATION(
-                ItemTransform::rotation,
-                360F,
-                1F,
-                true
-        ),
-        TRANSLATION(
-                ItemTransform::translation,
-                ItemTransform.Deserializer.MAX_TRANSLATION,
-                .0625F, // Translation is a special snowflake and gets divided by 16, see ItemTransform.Deserializer
-                false
-        ),
-        SCALE(
-                ItemTransform::scale,
-                ItemTransform.Deserializer.MAX_SCALE,
-                1F,
-                false
-        ),
-        RIGHT_ROTATION(
-                ItemTransform::rightRotation,
-                360F,
-                1F,
-                true
-        );
-
-        private final Function<ItemTransform, Vector3fc> lookup;
-        private final float range;
-        private final float multiplier;
-        private final boolean wrap;
-
-        Attribute(Function<ItemTransform, Vector3fc> lookup, float range, float multiplier, boolean wrap) {
-            this.lookup = lookup;
-            this.range = range;
-            this.multiplier = multiplier;
-            this.wrap = wrap;
-        }
     }
 }

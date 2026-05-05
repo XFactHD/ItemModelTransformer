@@ -31,10 +31,10 @@ public final class TransformPrinter {
             }
             boolean attributePrinted = false;
             builder.append(JSON_PERSPECTIVE_INDENT).append("\"").append(perspective.getSerializedName()).append("\": {\n");
-            attributePrinted |= printAttributeJson(builder, "rotation", transform.rotation(), ItemTransform.Deserializer.DEFAULT_ROTATION, attributePrinted, 1F);
-            attributePrinted |= printAttributeJson(builder, "translation", transform.translation(), ItemTransform.Deserializer.DEFAULT_TRANSLATION, attributePrinted, 16F);
-            attributePrinted |= printAttributeJson(builder, "scale", transform.scale(), ItemTransform.Deserializer.DEFAULT_SCALE, attributePrinted, 1F);
-            attributePrinted |= printAttributeJson(builder, "right_rotation", transform.rightRotation(), ItemTransform.Deserializer.DEFAULT_ROTATION, attributePrinted, 1F);
+            attributePrinted |= printAttributeJson(builder, Attribute.ROTATION, transform, attributePrinted);
+            attributePrinted |= printAttributeJson(builder, Attribute.TRANSLATION, transform, attributePrinted);
+            attributePrinted |= printAttributeJson(builder, Attribute.SCALE, transform, attributePrinted);
+            attributePrinted |= printAttributeJson(builder, Attribute.RIGHT_ROTATION, transform, attributePrinted);
             builder.append("\n").append(JSON_PERSPECTIVE_INDENT).append("}");
 
             perspectivePrinted = true;
@@ -43,17 +43,20 @@ public final class TransformPrinter {
         return builder.toString();
     }
 
-    private static boolean printAttributeJson(StringBuilder builder, String type, Vector3fc value, Vector3fc defaultValue, boolean prevPrinted, float multiplier) {
-        if (Utils.equals(value, defaultValue)) {
+    private static boolean printAttributeJson(StringBuilder builder, Attribute attribute, ItemTransform transform, boolean prevPrinted) {
+        Vector3fc value = attribute.lookup(transform);
+        if (Utils.equals(value, attribute.getDefaultValue())) {
             return false;
         }
+
+        float multiplier = 1F / attribute.getMultiplier();
 
         if (prevPrinted) {
             builder.append(",\n");
         }
         builder.append(JSON_ATTRIBUTE_INDENT)
                 .append("\"")
-                .append(type)
+                .append(attribute.getJsonKey())
                 .append("\": [ ");
         printFloat(builder, value.x(), multiplier);
         builder.append(", ");
@@ -78,10 +81,10 @@ public final class TransformPrinter {
             builder.append("\n")
                     .append(DATAGEN_PERSPECTIVE_INDENT)
                     .append(".transform(ItemDisplayContext.").append(perspective).append(", builder -> builder");
-            printAttributeDatagen(builder, "rotation", transform.rotation(), ItemTransform.Deserializer.DEFAULT_ROTATION, 1F);
-            printAttributeDatagen(builder, "translation", transform.translation(), ItemTransform.Deserializer.DEFAULT_TRANSLATION, 16F);
-            printAttributeDatagen(builder, "scale", transform.scale(), ItemTransform.Deserializer.DEFAULT_SCALE, 1F);
-            printAttributeDatagen(builder, "rightRotation", transform.rightRotation(), ItemTransform.Deserializer.DEFAULT_ROTATION, 1F);
+            printAttributeDatagen(builder, Attribute.ROTATION, transform);
+            printAttributeDatagen(builder, Attribute.TRANSLATION, transform);
+            printAttributeDatagen(builder, Attribute.SCALE, transform);
+            printAttributeDatagen(builder, Attribute.RIGHT_ROTATION, transform);
             builder.append("\n")
                     .append(DATAGEN_PERSPECTIVE_INDENT)
                     .append(")");
@@ -92,15 +95,18 @@ public final class TransformPrinter {
                 .toString();
     }
 
-    private static void printAttributeDatagen(StringBuilder builder, String type, Vector3fc value, Vector3fc defaultValue, float multiplier) {
-        if (Utils.equals(value, defaultValue)) {
+    private static void printAttributeDatagen(StringBuilder builder, Attribute attribute, ItemTransform transform) {
+        Vector3fc value = attribute.lookup(transform);
+        if (Utils.equals(value, attribute.getDefaultValue())) {
             return;
         }
+
+        float multiplier = 1F / attribute.getMultiplier();
 
         builder.append("\n")
                 .append(DATAGEN_ATTRIBUTE_INDENT)
                 .append(".")
-                .append(type)
+                .append(attribute.getDatagenMethod())
                 .append("(");
         printFloat(builder, value.x(), multiplier);
         builder.append("F, ");

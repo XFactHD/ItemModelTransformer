@@ -28,6 +28,7 @@ import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import xfacthd.itemmodeltransformer.client.IMTClient;
 import xfacthd.itemmodeltransformer.client.mixin.AccessorItemStackRenderStateLayer;
+import xfacthd.itemmodeltransformer.client.util.Attribute;
 import xfacthd.itemmodeltransformer.client.util.TransformHolder;
 import xfacthd.itemmodeltransformer.client.util.TransformPrinter;
 import xfacthd.itemmodeltransformer.client.util.Utils;
@@ -282,20 +283,20 @@ public final class TransformOverlay implements GuiLayer {
             float magnitude = getMagnitude(-1F);
             switch (line) {
                 case 0 -> cycleContext(-1);
-                case 1 -> holder.modify(TransformHolder.Attribute.ROTATION, element, magnitude);
-                case 2 -> holder.modify(TransformHolder.Attribute.TRANSLATION, element, magnitude);
-                case 3 -> holder.modify(TransformHolder.Attribute.SCALE, element, magnitude);
-                case 4 -> holder.modify(TransformHolder.Attribute.RIGHT_ROTATION, element, magnitude);
+                case 1 -> holder.modify(Attribute.ROTATION, element, magnitude);
+                case 2 -> holder.modify(Attribute.TRANSLATION, element, magnitude);
+                case 3 -> holder.modify(Attribute.SCALE, element, magnitude);
+                case 4 -> holder.modify(Attribute.RIGHT_ROTATION, element, magnitude);
             }
         } else if (wasClicked(IMTClient.KEY_INCREMENT)) {
             TransformHolder holder = getScratchTransform();
             float magnitude = getMagnitude(1F);
             switch (line) {
                 case 0 -> cycleContext(1);
-                case 1 -> holder.modify(TransformHolder.Attribute.ROTATION, element, magnitude);
-                case 2 -> holder.modify(TransformHolder.Attribute.TRANSLATION, element, magnitude);
-                case 3 -> holder.modify(TransformHolder.Attribute.SCALE, element, magnitude);
-                case 4 -> holder.modify(TransformHolder.Attribute.RIGHT_ROTATION, element, magnitude);
+                case 1 -> holder.modify(Attribute.ROTATION, element, magnitude);
+                case 2 -> holder.modify(Attribute.TRANSLATION, element, magnitude);
+                case 3 -> holder.modify(Attribute.SCALE, element, magnitude);
+                case 4 -> holder.modify(Attribute.RIGHT_ROTATION, element, magnitude);
             }
         } else if (wasClicked(IMTClient.KEY_CLEAR)) {
             boolean clearAll = shift;
