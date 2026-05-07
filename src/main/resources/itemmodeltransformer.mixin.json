@@ -5,6 +5,7 @@
     "client": [
         "AccessorItemStackRenderStateLayer",
         "AccessorKeyMapping",
+        "MixinInputConstantsType",
         "MixinItemModelResolver",
         "MixinItemStackRenderState",
         "MixinItemStackLayerRenderState"
