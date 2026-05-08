@@ -110,9 +110,9 @@ public final class TransformPrinter {
                 .append("(");
         printFloat(builder, value.x(), multiplier);
         builder.append("F, ");
-        printFloat(builder, value.x(), multiplier);
+        printFloat(builder, value.y(), multiplier);
         builder.append("F, ");
-        printFloat(builder, value.x(), multiplier);
+        printFloat(builder, value.z(), multiplier);
         builder.append("F)");
     }
 
