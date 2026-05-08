@@ -17,7 +17,6 @@ import net.minecraft.util.Util;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -171,11 +170,7 @@ public final class TransformOverlay implements GuiLayer {
             case THIRD_PERSON_LEFT_HAND, FIRST_PERSON_LEFT_HAND -> getHeldItem(player, false).is(item);
             case THIRD_PERSON_RIGHT_HAND, FIRST_PERSON_RIGHT_HAND -> getHeldItem(player, true).is(item);
             case HEAD -> player.getItemBySlot(EquipmentSlot.HEAD).is(item);
-            case GUI -> {
-                Inventory inventory = player.getInventory();
-                yield inventory.getItem(inventory.getSelectedSlot()).is(item);
-            }
-            case GROUND, FIXED, ON_SHELF -> player.getMainHandItem().is(item);
+            case GUI, GROUND, FIXED, ON_SHELF -> player.getMainHandItem().is(item);
         };
     }
 
