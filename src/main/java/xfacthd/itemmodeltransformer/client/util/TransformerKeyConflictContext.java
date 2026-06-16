@@ -13,7 +13,7 @@ public sealed class TransformerKeyConflictContext implements IKeyConflictContext
 
     @Override
     public boolean isActive() {
-        return TransformOverlay.isEnabled() && Minecraft.getInstance().screen == null;
+        return TransformOverlay.isEnabled() && Minecraft.getInstance().gui.screen() == null;
     }
 
     @Override
