@@ -1,4 +1,4 @@
-package xfacthd.itemmodeltransformer.client.mixin;
+package io.github.xfacthd.itemmodeltransformer.mixin;
 
 import net.minecraft.client.KeyMapping;
 import net.neoforged.neoforge.client.settings.KeyMappingLookup;

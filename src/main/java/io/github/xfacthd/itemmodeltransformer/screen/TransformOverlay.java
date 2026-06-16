@@ -1,7 +1,13 @@
-package xfacthd.itemmodeltransformer.client.screen;
+package io.github.xfacthd.itemmodeltransformer.screen;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
+import io.github.xfacthd.itemmodeltransformer.ItemModelTransformer;
+import io.github.xfacthd.itemmodeltransformer.mixin.AccessorItemStackRenderStateLayer;
+import io.github.xfacthd.itemmodeltransformer.util.Attribute;
+import io.github.xfacthd.itemmodeltransformer.util.TransformHolder;
+import io.github.xfacthd.itemmodeltransformer.util.TransformPrinter;
+import io.github.xfacthd.itemmodeltransformer.util.Utils;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -25,12 +31,6 @@ import net.neoforged.neoforge.client.gui.GuiLayer;
 import net.neoforged.neoforge.common.util.Lazy;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
-import xfacthd.itemmodeltransformer.client.IMTClient;
-import xfacthd.itemmodeltransformer.client.mixin.AccessorItemStackRenderStateLayer;
-import xfacthd.itemmodeltransformer.client.util.Attribute;
-import xfacthd.itemmodeltransformer.client.util.TransformHolder;
-import xfacthd.itemmodeltransformer.client.util.TransformPrinter;
-import xfacthd.itemmodeltransformer.client.util.Utils;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -190,7 +190,7 @@ public final class TransformOverlay implements GuiLayer {
             return new Component[] {
                     Component.translatable(
                             "desc.itemmodeltransformer.usage.show",
-                            Utils.formatKeybind(IMTClient.KEY_TOGGLE_USAGE)
+                            Utils.formatKeybind(ItemModelTransformer.KEY_TOGGLE_USAGE)
                     )
             };
         }
@@ -198,28 +198,28 @@ public final class TransformOverlay implements GuiLayer {
         return new Component[] {
                 Component.translatable(
                         "desc.itemmodeltransformer.usage.hide",
-                        Utils.formatKeybind(IMTClient.KEY_TOGGLE_USAGE)
+                        Utils.formatKeybind(ItemModelTransformer.KEY_TOGGLE_USAGE)
                 ),
                 Component.translatable(
                         "desc.itemmodeltransformer.usage.prev_category",
-                        Utils.formatKeybind(IMTClient.KEY_PREV_CATEGORY)
+                        Utils.formatKeybind(ItemModelTransformer.KEY_PREV_CATEGORY)
                 ),
                 Component.translatable(
                         "desc.itemmodeltransformer.usage.next_category",
-                        Utils.formatKeybind(IMTClient.KEY_NEXT_CATEGORY)
+                        Utils.formatKeybind(ItemModelTransformer.KEY_NEXT_CATEGORY)
                 ),
                 Component.translatable(
                         "desc.itemmodeltransformer.usage.prev_element",
-                        Utils.formatKeybind(IMTClient.KEY_PREV_ELEMENT)
+                        Utils.formatKeybind(ItemModelTransformer.KEY_PREV_ELEMENT)
                 ),
                 Component.translatable(
                         "desc.itemmodeltransformer.usage.next_element",
-                        Utils.formatKeybind(IMTClient.KEY_NEXT_ELEMENT)
+                        Utils.formatKeybind(ItemModelTransformer.KEY_NEXT_ELEMENT)
                 ),
                 Component.translatable(
                         "desc.itemmodeltransformer.usage.inc_dec",
-                        Utils.formatKeybind(IMTClient.KEY_INCREMENT),
-                        Utils.formatKeybind(IMTClient.KEY_DECREMENT)
+                        Utils.formatKeybind(ItemModelTransformer.KEY_INCREMENT),
+                        Utils.formatKeybind(ItemModelTransformer.KEY_DECREMENT)
                 ),
                 DESC_INC_DEC_X10_0,
                 DESC_INC_DEC_X0_1,
@@ -227,21 +227,21 @@ public final class TransformOverlay implements GuiLayer {
                 DESC_INC_DEC_X0_001,
                 Component.translatable(
                         "desc.itemmodeltransformer.usage.clear",
-                        Utils.formatKeybind(IMTClient.KEY_CLEAR)
+                        Utils.formatKeybind(ItemModelTransformer.KEY_CLEAR)
                 ),
                 DESC_CLEAR_ALL,
                 Component.translatable(
                         "desc.itemmodeltransformer.usage.load",
-                        Utils.formatKeybind(IMTClient.KEY_LOAD)
+                        Utils.formatKeybind(ItemModelTransformer.KEY_LOAD)
                 ),
                 DESC_LOAD_OVERWRITE,
                 Component.translatable(
                         "desc.itemmodeltransformer.usage.print_json",
-                        Utils.formatKeybind(IMTClient.KEY_PRINT_JSON)
+                        Utils.formatKeybind(ItemModelTransformer.KEY_PRINT_JSON)
                 ),
                 Component.translatable(
                         "desc.itemmodeltransformer.usage.print_datagen",
-                        Utils.formatKeybind(IMTClient.KEY_PRINT_DATAGEN)
+                        Utils.formatKeybind(ItemModelTransformer.KEY_PRINT_DATAGEN)
                 )
         };
     }
@@ -265,15 +265,15 @@ public final class TransformOverlay implements GuiLayer {
         ctrl = InputConstants.isKeyDown(window, KEY_LEFT_CTRL) || InputConstants.isKeyDown(window, KEY_RIGHT_CTRL);
         alt = InputConstants.isKeyDown(window, KEY_LEFT_ALT) || InputConstants.isKeyDown(window, KEY_RIGHT_ALT);
 
-        if (wasClicked(IMTClient.KEY_PREV_CATEGORY)) {
+        if (wasClicked(ItemModelTransformer.KEY_PREV_CATEGORY)) {
             line = Mth.positiveModulo(line - 1, LINE_COUNT);
-        } else if (wasClicked(IMTClient.KEY_NEXT_CATEGORY)) {
+        } else if (wasClicked(ItemModelTransformer.KEY_NEXT_CATEGORY)) {
             line = Mth.positiveModulo(line + 1, LINE_COUNT);
-        } else if (line > 0 && wasClicked(IMTClient.KEY_PREV_ELEMENT)) {
+        } else if (line > 0 && wasClicked(ItemModelTransformer.KEY_PREV_ELEMENT)) {
             element = Mth.positiveModulo(element - 1, ELEMENT_COUNT);
-        } else if (line > 0 && wasClicked(IMTClient.KEY_NEXT_ELEMENT)) {
+        } else if (line > 0 && wasClicked(ItemModelTransformer.KEY_NEXT_ELEMENT)) {
             element = Mth.positiveModulo(element + 1, ELEMENT_COUNT);
-        } else if (wasClicked(IMTClient.KEY_DECREMENT)) {
+        } else if (wasClicked(ItemModelTransformer.KEY_DECREMENT)) {
             TransformHolder holder = getScratchTransform();
             float magnitude = getMagnitude(-1F);
             switch (line) {
@@ -283,7 +283,7 @@ public final class TransformOverlay implements GuiLayer {
                 case 3 -> holder.modify(Attribute.SCALE, element, magnitude);
                 case 4 -> holder.modify(Attribute.RIGHT_ROTATION, element, magnitude);
             }
-        } else if (wasClicked(IMTClient.KEY_INCREMENT)) {
+        } else if (wasClicked(ItemModelTransformer.KEY_INCREMENT)) {
             TransformHolder holder = getScratchTransform();
             float magnitude = getMagnitude(1F);
             switch (line) {
@@ -293,7 +293,7 @@ public final class TransformOverlay implements GuiLayer {
                 case 3 -> holder.modify(Attribute.SCALE, element, magnitude);
                 case 4 -> holder.modify(Attribute.RIGHT_ROTATION, element, magnitude);
             }
-        } else if (wasClicked(IMTClient.KEY_CLEAR)) {
+        } else if (wasClicked(ItemModelTransformer.KEY_CLEAR)) {
             boolean clearAll = shift;
             Stream<TransformHolder> transforms;
             if (clearAll) {
@@ -305,7 +305,7 @@ public final class TransformOverlay implements GuiLayer {
 
             //noinspection ConstantConditions
             Minecraft.getInstance().player.sendOverlayMessage(clearAll ? MSG_CLEARED_ALL : MSG_CLEARED);
-        } else if (wasClicked(IMTClient.KEY_LOAD)) {
+        } else if (wasClicked(ItemModelTransformer.KEY_LOAD)) {
             Player player = Minecraft.getInstance().player;
             //noinspection ConstantConditions
             ItemStack stack = player.getMainHandItem();
@@ -325,17 +325,17 @@ public final class TransformOverlay implements GuiLayer {
                 }
                 player.sendOverlayMessage(partial ? MSG_LOADED_PARTIAL : MSG_LOADED);
             }
-        } else if (wasClicked(IMTClient.KEY_PRINT_JSON)) {
+        } else if (wasClicked(ItemModelTransformer.KEY_PRINT_JSON)) {
             String out = TransformPrinter.printJson(SCRATCH_TRANSFORMS);
             Minecraft.getInstance().keyboardHandler.setClipboard(out);
             //noinspection ConstantConditions
             Minecraft.getInstance().player.sendOverlayMessage(MSG_COPIED_JSON);
-        } else if (wasClicked(IMTClient.KEY_PRINT_DATAGEN)) {
+        } else if (wasClicked(ItemModelTransformer.KEY_PRINT_DATAGEN)) {
             String out = TransformPrinter.printDatagen(SCRATCH_TRANSFORMS);
             Minecraft.getInstance().keyboardHandler.setClipboard(out);
             //noinspection ConstantConditions
             Minecraft.getInstance().player.sendOverlayMessage(MSG_COPIED_CODE);
-        } else if (wasClicked(IMTClient.KEY_TOGGLE_USAGE)) {
+        } else if (wasClicked(ItemModelTransformer.KEY_TOGGLE_USAGE)) {
             showUsage = !showUsage;
         }
 
@@ -376,14 +376,14 @@ public final class TransformOverlay implements GuiLayer {
     }
 
     private static void releaseAllKeys() {
-        Utils.releaseKey(IMTClient.KEY_PREV_CATEGORY.get());
-        Utils.releaseKey(IMTClient.KEY_NEXT_CATEGORY.get());
-        Utils.releaseKey(IMTClient.KEY_PREV_ELEMENT.get());
-        Utils.releaseKey(IMTClient.KEY_NEXT_ELEMENT.get());
-        Utils.releaseKey(IMTClient.KEY_DECREMENT.get());
-        Utils.releaseKey(IMTClient.KEY_INCREMENT.get());
-        Utils.releaseKey(IMTClient.KEY_CLEAR.get());
-        Utils.releaseKey(IMTClient.KEY_LOAD.get());
-        Utils.releaseKey(IMTClient.KEY_PRINT_JSON.get());
+        Utils.releaseKey(ItemModelTransformer.KEY_PREV_CATEGORY.get());
+        Utils.releaseKey(ItemModelTransformer.KEY_NEXT_CATEGORY.get());
+        Utils.releaseKey(ItemModelTransformer.KEY_PREV_ELEMENT.get());
+        Utils.releaseKey(ItemModelTransformer.KEY_NEXT_ELEMENT.get());
+        Utils.releaseKey(ItemModelTransformer.KEY_DECREMENT.get());
+        Utils.releaseKey(ItemModelTransformer.KEY_INCREMENT.get());
+        Utils.releaseKey(ItemModelTransformer.KEY_CLEAR.get());
+        Utils.releaseKey(ItemModelTransformer.KEY_LOAD.get());
+        Utils.releaseKey(ItemModelTransformer.KEY_PRINT_JSON.get());
     }
 }

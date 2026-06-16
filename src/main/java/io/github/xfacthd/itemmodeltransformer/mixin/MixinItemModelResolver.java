@@ -1,5 +1,6 @@
-package xfacthd.itemmodeltransformer.client.mixin;
+package io.github.xfacthd.itemmodeltransformer.mixin;
 
+import io.github.xfacthd.itemmodeltransformer.util.ItemAwareItemStackRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.world.entity.ItemOwner;
@@ -11,7 +12,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xfacthd.itemmodeltransformer.client.util.ItemAwareItemStackRenderState;
 
 @Mixin(ItemModelResolver.class)
 @SuppressWarnings("MethodMayBeStatic")

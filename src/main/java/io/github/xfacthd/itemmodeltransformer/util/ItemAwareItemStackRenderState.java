@@ -1,4 +1,4 @@
-package xfacthd.itemmodeltransformer.client.util;
+package io.github.xfacthd.itemmodeltransformer.util;
 
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;

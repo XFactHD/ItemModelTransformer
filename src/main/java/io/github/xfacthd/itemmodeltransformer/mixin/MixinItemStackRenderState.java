@@ -1,12 +1,12 @@
-package xfacthd.itemmodeltransformer.client.mixin;
+package io.github.xfacthd.itemmodeltransformer.mixin;
 
+import io.github.xfacthd.itemmodeltransformer.util.ItemAwareItemStackRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.Items;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import xfacthd.itemmodeltransformer.client.util.ItemAwareItemStackRenderState;
 
 @Mixin(ItemStackRenderState.class)
 public final class MixinItemStackRenderState implements ItemAwareItemStackRenderState {

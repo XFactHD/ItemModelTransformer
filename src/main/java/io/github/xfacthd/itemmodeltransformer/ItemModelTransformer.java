@@ -1,22 +1,25 @@
-package xfacthd.itemmodeltransformer.client;
+package io.github.xfacthd.itemmodeltransformer;
 
+import io.github.xfacthd.itemmodeltransformer.screen.TransformOverlay;
+import io.github.xfacthd.itemmodeltransformer.util.TransformerKeyConflictContext;
+import io.github.xfacthd.itemmodeltransformer.util.Utils;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.*;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.client.event.*;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.Lazy;
 import org.lwjgl.glfw.GLFW;
-import xfacthd.itemmodeltransformer.ItemModelTransformer;
-import xfacthd.itemmodeltransformer.client.screen.TransformOverlay;
-import xfacthd.itemmodeltransformer.client.util.TransformerKeyConflictContext;
-import xfacthd.itemmodeltransformer.client.util.Utils;
 
 @Mod(value = ItemModelTransformer.MOD_ID, dist = Dist.CLIENT)
 @SuppressWarnings("UtilityClassWithPublicConstructor")
-public final class IMTClient {
+public final class ItemModelTransformer {
+    public static final String MOD_ID = "itemmodeltransformer";
     private static final KeyMapping.Category CATEGORY = new KeyMapping.Category(Utils.rl("main"));
     private static final Lazy<KeyMapping> KEY_TOGGLE_TRANSFORMER = makeKeybind("toggle", GLFW.GLFW_KEY_I, false, false);
     public static final Lazy<KeyMapping> KEY_PREV_CATEGORY = makeKeybind("prev_category", GLFW.GLFW_KEY_UP, true, false);
@@ -31,11 +34,11 @@ public final class IMTClient {
     public static final Lazy<KeyMapping> KEY_PRINT_DATAGEN = makeKeybind("print_datagen", GLFW.GLFW_KEY_G, true, false);
     public static final Lazy<KeyMapping> KEY_TOGGLE_USAGE = makeKeybind("toggle_usage", GLFW.GLFW_KEY_H, true, false);
 
-    public IMTClient(IEventBus modBus) {
-        modBus.addListener(IMTClient::onRegisterKeyMappings);
-        modBus.addListener(IMTClient::onRegisterGuiOverlays);
+    public ItemModelTransformer(IEventBus modBus) {
+        modBus.addListener(ItemModelTransformer::onRegisterKeyMappings);
+        modBus.addListener(ItemModelTransformer::onRegisterGuiOverlays);
 
-        NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, IMTClient::onClientTick);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, ItemModelTransformer::onClientTick);
     }
 
     private static void onRegisterKeyMappings(final RegisterKeyMappingsEvent event) {

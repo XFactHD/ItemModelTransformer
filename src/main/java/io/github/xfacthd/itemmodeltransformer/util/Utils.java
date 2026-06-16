@@ -1,6 +1,8 @@
-package xfacthd.itemmodeltransformer.client.util;
+package io.github.xfacthd.itemmodeltransformer.util;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import io.github.xfacthd.itemmodeltransformer.ItemModelTransformer;
+import io.github.xfacthd.itemmodeltransformer.mixin.AccessorKeyMapping;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.resources.model.cuboid.ItemTransform;
@@ -13,8 +15,6 @@ import net.minecraft.util.Mth;
 import net.neoforged.neoforge.client.settings.KeyMappingLookup;
 import net.neoforged.neoforge.common.util.Lazy;
 import org.joml.Vector3fc;
-import xfacthd.itemmodeltransformer.ItemModelTransformer;
-import xfacthd.itemmodeltransformer.client.mixin.AccessorKeyMapping;
 
 public final class Utils {
     private static final Style FULL_SPACE_FONT = Style.EMPTY.withFont(new FontDescription.Resource(Utils.rl("full_space")));

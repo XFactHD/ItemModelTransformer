@@ -1,4 +1,4 @@
-package xfacthd.itemmodeltransformer.client.mixin;
+package io.github.xfacthd.itemmodeltransformer.mixin;
 
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.resources.model.cuboid.ItemTransform;

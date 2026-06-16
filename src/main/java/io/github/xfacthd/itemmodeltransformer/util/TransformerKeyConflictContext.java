@@ -1,9 +1,9 @@
-package xfacthd.itemmodeltransformer.client.util;
+package io.github.xfacthd.itemmodeltransformer.util;
 
+import io.github.xfacthd.itemmodeltransformer.screen.TransformOverlay;
 import net.minecraft.client.Minecraft;
 import net.neoforged.neoforge.client.settings.IKeyConflictContext;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
-import xfacthd.itemmodeltransformer.client.screen.TransformOverlay;
 
 public sealed class TransformerKeyConflictContext implements IKeyConflictContext {
     public static final IKeyConflictContext INSTANCE = new TransformerKeyConflictContext();

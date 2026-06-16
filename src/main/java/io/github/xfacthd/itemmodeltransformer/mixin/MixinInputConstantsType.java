@@ -1,4 +1,4 @@
-package xfacthd.itemmodeltransformer.client.mixin;
+package io.github.xfacthd.itemmodeltransformer.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.platform.InputConstants;

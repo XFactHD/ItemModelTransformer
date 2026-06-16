@@ -1,8 +1,10 @@
-package xfacthd.itemmodeltransformer.client.mixin;
+package io.github.xfacthd.itemmodeltransformer.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
+import io.github.xfacthd.itemmodeltransformer.screen.TransformOverlay;
+import io.github.xfacthd.itemmodeltransformer.util.ItemAwareItemStackRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.resources.model.cuboid.ItemTransform;
 import net.minecraft.world.item.Item;
@@ -11,8 +13,6 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import xfacthd.itemmodeltransformer.client.screen.TransformOverlay;
-import xfacthd.itemmodeltransformer.client.util.ItemAwareItemStackRenderState;
 
 @Mixin(ItemStackRenderState.LayerRenderState.class)
 public final class MixinItemStackLayerRenderState {
